@@ -9,7 +9,7 @@ export class PostgreSQL implements IDatabase {
     
     constructor() {
         const config: ClientConfig = {
-            connectionString: process.env.POSTGRES_HOST
+            connectionString: process.env.DATABASE_URL
         };
         if (config.connectionString !== undefined && config.connectionString.startsWith("postgres")) {
             config.ssl = {
