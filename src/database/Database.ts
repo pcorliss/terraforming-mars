@@ -9,7 +9,7 @@ export class Database {
 
     public static getInstance() {
       if (!Database.instance) {
-        if (process.env.POSTGRES_HOST !== undefined) {
+        if (process.env.DATABASE_URL !== undefined) {
           Database.instance = new PostgreSQL();
         } else {
           Database.instance = new SQLite();
