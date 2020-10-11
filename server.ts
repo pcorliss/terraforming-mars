@@ -92,6 +92,7 @@ function processRequest(req: http.IncomingMessage, res: http.ServerResponse): vo
             } else if (
                 req.url.startsWith("/assets/") ||
                 req.url === "/favicon.ico" ||
+                req.url === "/robots.txt" ||
                 req.url === "/main.js" ||
                 req.url === "/main.js.map"
             ) {
@@ -1000,6 +1001,9 @@ function serveAsset(req: http.IncomingMessage, res: http.ServerResponse): void {
     if (req.url === "/favicon.ico") {
         res.setHeader("Content-Type", "image/x-icon");
         file = "favicon.ico";
+    } else if (req.url === "/robots.txt") {
+        res.setHeader("Content-Type", "plain/text");
+        file = "robots.txt";
     } else if (req.url === "/main.js" || req.url === "/main.js.map") {
         res.setHeader("Content-Type", "text/javascript");
         file = "dist" + req.url;
