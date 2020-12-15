@@ -510,7 +510,7 @@ function serveAsset(req: http.IncomingMessage, res: http.ServerResponse): void {
     file = 'favicon.ico';
   } else if (req.url === '/robots.txt') {
     res.setHeader('Content-Type', 'plain/text');
-    res.write(fs.readFileSync('robots.txt'));
+    file = 'robots.txt';
   } else if (req.url === '/main.js' || req.url === '/main.js.map') {
     res.setHeader('Content-Type', 'text/javascript');
     let suffix = '';
