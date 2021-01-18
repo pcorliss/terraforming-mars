@@ -7,7 +7,7 @@ import {CardName} from '../../CardName';
 import {Game} from '../../Game';
 import {SelectSpace} from '../../inputs/SelectSpace';
 import {TileType} from '../../TileType';
-import {ISpace} from '../../ISpace';
+import {ISpace} from '../../boards/ISpace';
 import {PartyHooks} from '../../turmoil/parties/PartyHooks';
 import {PartyName} from '../../turmoil/parties/PartyName';
 import {REDS_RULING_POLICY_COST} from '../../constants';
@@ -16,10 +16,9 @@ import {CardRenderer} from '../render/CardRenderer';
 
 export class MagneticFieldGeneratorsPromo implements IProjectCard {
     public cost = 22;
-    public tags = [Tags.STEEL];
+    public tags = [Tags.BUILDING];
     public name = CardName.MAGNETIC_FIELD_GENERATORS_PROMO;
     public cardType = CardType.AUTOMATED;
-    public hasRequirements = false;
     public canPlay(player: Player, game: Game): boolean {
       const meetsEnergyRequirements = player.getProduction(Resources.ENERGY) >= 4;
       const canPlaceTile = game.board.getAvailableSpacesOnLand(player).length > 0;
@@ -46,7 +45,7 @@ export class MagneticFieldGeneratorsPromo implements IProjectCard {
     public metadata: CardMetadata = {
       cardNumber: '165',
       renderData: CardRenderer.builder((b) => {
-        b.productionBox((pb) => {
+        b.production((pb) => {
           pb.minus().energy(4).digit.br;
           pb.plus().plants(2);
         }).br;

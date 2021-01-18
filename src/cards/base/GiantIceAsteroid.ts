@@ -1,5 +1,6 @@
 import {IProjectCard} from '../IProjectCard';
 import {Tags} from '../Tags';
+import {Card} from '../Card';
 import {CardType} from '../CardType';
 import {Player} from '../../Player';
 import {Game} from '../../Game';
@@ -9,15 +10,27 @@ import {PartyHooks} from '../../turmoil/parties/PartyHooks';
 import {PartyName} from '../../turmoil/parties/PartyName';
 import {PlaceOceanTile} from '../../deferredActions/PlaceOceanTile';
 import {RemoveAnyPlants} from '../../deferredActions/RemoveAnyPlants';
-import {CardMetadata} from '../CardMetadata';
 import {CardRenderer} from '../render/CardRenderer';
 
-export class GiantIceAsteroid implements IProjectCard {
-  public cost = 36;
-  public tags = [Tags.SPACE];
-  public name = CardName.GIANT_ICE_ASTEROID;
-  public cardType = CardType.EVENT;
-  public hasRequirements = false;
+export class GiantIceAsteroid extends Card implements IProjectCard {
+  constructor() {
+    super({
+      cardType: CardType.EVENT,
+      name: CardName.GIANT_ICE_ASTEROID,
+      tags: [Tags.SPACE],
+      cost: 36,
+
+      metadata: {
+        description: 'Raise temperature 2 steps and place 2 ocean tiles. Remove up to 6 plants from any player.',
+        cardNumber: '080',
+        renderData: CardRenderer.builder((b) => {
+          b.temperature(2).br;
+          b.oceans(2).br;
+          b.minus().plants(-6).any;
+        }),
+      },
+    });
+  }
 
   public canPlay(player: Player, game: Game): boolean {
     const remainingOceans = MAX_OCEAN_TILES - game.board.getOceansOnBoard();
@@ -33,19 +46,9 @@ export class GiantIceAsteroid implements IProjectCard {
 
   public play(player: Player, game: Game) {
     game.increaseTemperature(player, 2);
-    game.defer(new PlaceOceanTile(player, game, 'Select space for first ocean'));
-    game.defer(new PlaceOceanTile(player, game, 'Select space for second ocean'));
-    game.defer(new RemoveAnyPlants(player, game, 6));
+    game.defer(new PlaceOceanTile(player, 'Select space for first ocean'));
+    game.defer(new PlaceOceanTile(player, 'Select space for second ocean'));
+    game.defer(new RemoveAnyPlants(player, 6));
     return undefined;
   }
-
-  public metadata: CardMetadata = {
-    description: 'Raise temperature 2 steps and place 2 ocean tiles. Remove up to 6 plants from any player.',
-    cardNumber: '080',
-    renderData: CardRenderer.builder((b) => {
-      b.temperature(2).br;
-      b.oceans(2).br;
-      b.minus().plants(-6).any;
-    }),
-  };
 }

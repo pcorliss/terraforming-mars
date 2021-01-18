@@ -17,7 +17,7 @@ describe('OlympusConference', function() {
     card = new OlympusConference();
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player);
   });
 
   it('Should play', function() {
@@ -84,7 +84,7 @@ describe('OlympusConference', function() {
     card.resourceCount = 1;
 
     // Play a 1 science tag card
-    player.playCard(game, scienceTagCard);
+    player.playCard(scienceTagCard);
 
     // OC asking to draw & MU asking to discard
     expect(game.deferredActions).has.lengthOf(2);
@@ -107,7 +107,7 @@ describe('OlympusConference', function() {
     card.resourceCount = 1;
 
     // Play a 1 science tag card
-    player.playCard(game, scienceTagCard);
+    player.playCard(scienceTagCard);
 
     // OC asking to draw & MU asking to discard
     expect(game.deferredActions).has.lengthOf(2);

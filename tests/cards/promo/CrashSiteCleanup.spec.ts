@@ -13,7 +13,7 @@ describe('CrashSiteCleanup', function() {
     card = new CrashSiteCleanup();
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player);
   });
 
   it('Can\'t play', function() {
@@ -22,7 +22,7 @@ describe('CrashSiteCleanup', function() {
 
   it('Can play if removed plants from another player this generation', function() {
     const player2 = TestPlayers.RED.newPlayer();
-    const game = new Game('foobar', [player, player2], player);
+    const game = Game.newInstance('foobar', [player, player2], player);
     player2.plants = 1;
 
     const smallAsteroid = new SmallAsteroid();
@@ -34,7 +34,7 @@ describe('CrashSiteCleanup', function() {
     expect(card.canPlay(player, game)).is.true;
     expect(game.someoneHasRemovedOtherPlayersPlants).is.true;
 
-    const action = card.play(player, game) as OrOptions;
+    const action = card.play(player) as OrOptions;
     action.options[0].cb();
     expect(player.titanium).to.eq(1);
     action.options[1].cb();
@@ -42,7 +42,7 @@ describe('CrashSiteCleanup', function() {
   });
 
   it('Can play if removed plants from neutral player in solo mode', function() {
-    game = new Game('foobar', [player], player);
+    game = Game.newInstance('foobar', [player], player);
     const smallAsteroid = new SmallAsteroid();
     smallAsteroid.play(player, game);
 

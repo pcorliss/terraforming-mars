@@ -5,7 +5,7 @@ import {Game} from '../../Game';
 import {ResourceType} from '../../ResourceType';
 import {CardName} from '../../CardName';
 import {Resources} from '../../Resources';
-import {LogHelper} from '../../components/LogHelper';
+import {LogHelper} from '../../LogHelper';
 import {CardMetadata} from '../CardMetadata';
 import {CardRequirements} from '../CardRequirements';
 import {CardRenderer} from '../render/CardRenderer';
@@ -23,7 +23,7 @@ export class AerosportTournament implements IProjectCard {
   public play(player: Player, game: Game) {
     const amount = game.getCitiesInPlay();
     player.megaCredits += amount;
-    LogHelper.logGainStandardResource(game, player, Resources.MEGACREDITS, amount);
+    LogHelper.logGainStandardResource(player, Resources.MEGACREDITS, amount);
     return undefined;
   }
 

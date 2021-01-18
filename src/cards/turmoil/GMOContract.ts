@@ -13,7 +13,7 @@ import {CardRequirements} from '../CardRequirements';
 
 export class GMOContract implements IProjectCard {
   public cost = 3;
-  public tags = [Tags.MICROBES, Tags.SCIENCE];
+  public tags = [Tags.MICROBE, Tags.SCIENCE];
   public name = CardName.GMO_CONTRACT;
   public cardType = CardType.ACTIVE;
 
@@ -25,7 +25,7 @@ export class GMOContract implements IProjectCard {
   }
 
   public onCardPlayed(player: Player, game: Game, card: IProjectCard): void {
-    const amount = card.tags.filter((tag) => tag === Tags.ANIMAL || tag === Tags.PLANT || tag === Tags.MICROBES).length;
+    const amount = card.tags.filter((tag) => tag === Tags.ANIMAL || tag === Tags.PLANT || tag === Tags.MICROBE).length;
     if (amount > 0) {
       game.defer(
         new DeferredAction(player, () => {
@@ -45,10 +45,9 @@ export class GMOContract implements IProjectCard {
     cardNumber: 'T06',
     requirements: CardRequirements.builder((b) => b.party(PartyName.GREENS)),
     renderData: CardRenderer.builder((b) => {
-      b.effectBox((be) => {
+      b.effect('Each time you play a plant, animal or microbe tag, including this, gain 2MC.', (be) => {
         be.animals(1).played.slash().plants(1).played.slash().microbes(1).played;
         be.startEffect.megacredits(2);
-        be.description('Effect: Each time you play a plant, animal or microbe tag, including this, gain 2MC.');
       });
     }),
   };

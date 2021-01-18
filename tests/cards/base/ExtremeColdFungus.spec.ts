@@ -14,7 +14,7 @@ describe('ExtremeColdFungus', function() {
     card = new ExtremeColdFungus();
     player = TestPlayers.BLUE.newPlayer();
     player2 = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, player2], player);
+    game = Game.newInstance('foobar', [player, player2], player);
   });
 
   it('Can\'t play', function() {
@@ -31,7 +31,7 @@ describe('ExtremeColdFungus', function() {
     const tardigrades = new Tardigrades();
     player.playedCards.push(tardigrades);
 
-    const action = card.action(player, game);
+    const action = card.action(player);
     expect(action instanceof OrOptions).is.true;
     expect(action!.options).has.lengthOf(2);
 
@@ -47,7 +47,7 @@ describe('ExtremeColdFungus', function() {
     const ants = new Ants();
     player.playedCards.push(tardigrades, ants);
 
-    const action = card.action(player, game);
+    const action = card.action(player);
     expect(action instanceof OrOptions).is.true;
     expect(action!.options).has.lengthOf(2);
 

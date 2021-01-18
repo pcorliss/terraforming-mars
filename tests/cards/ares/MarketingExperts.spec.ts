@@ -17,8 +17,8 @@ describe('MarketingExperts', function() {
     card = new MarketingExperts();
     player = TestPlayers.BLUE.newPlayer();
     otherPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, otherPlayer], player, ARES_OPTIONS_NO_HAZARDS);
-    game.board = new EmptyBoard();
+    game = Game.newInstance('foobar', [player, otherPlayer], player, ARES_OPTIONS_NO_HAZARDS);
+    game.board = EmptyBoard.newInstance();
   });
 
   it('Play', function() {

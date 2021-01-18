@@ -14,21 +14,20 @@ export class MiningColony implements IProjectCard {
     public tags = [Tags.SPACE];
     public name = CardName.MINING_COLONY;
     public cardType = CardType.AUTOMATED;
-    public hasRequirements = false;
 
     public canPlay(player: Player, game: Game): boolean {
-      return player.canPlayColonyPlacementCard(game);
+      return player.hasAvailableColonyTileToBuildOn(game);
     }
 
     public play(player: Player, game: Game) {
-      game.defer(new BuildColony(player, game, false, 'Select colony for Mining Colony'));
+      game.defer(new BuildColony(player, false, 'Select colony for Mining Colony'));
       player.addProduction(Resources.TITANIUM);
       return undefined;
     }
     public metadata: CardMetadata = {
       cardNumber: 'C25',
       renderData: CardRenderer.builder((b) => {
-        b.productionBox((pb) => pb.titanium(1)).colonies(1);
+        b.production((pb) => pb.titanium(1)).colonies(1);
       }),
       description: 'Increase your titanium production 1 step. Place a colony.',
     }

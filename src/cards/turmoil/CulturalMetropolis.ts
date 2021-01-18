@@ -14,7 +14,7 @@ import {CardRenderer} from '../render/CardRenderer';
 
 export class CulturalMetropolis implements IProjectCard {
     public cost = 20;
-    public tags = [Tags.CITY, Tags.STEEL];
+    public tags = [Tags.CITY, Tags.BUILDING];
     public name = CardName.CULTURAL_METROPOLIS;
     public cardType = CardType.AUTOMATED;
 
@@ -29,13 +29,13 @@ export class CulturalMetropolis implements IProjectCard {
     public play(player: Player, game: Game) {
       player.addProduction(Resources.ENERGY, -1);
       player.addProduction(Resources.MEGACREDITS, 3);
-      game.defer(new PlaceCityTile(player, game));
+      game.defer(new PlaceCityTile(player));
       const title = 'Select where to send two delegates';
 
       if (game.turmoil!.getDelegates(player.id) > 1) {
-        game.defer(new SendDelegateToArea(player, game, title, 2, undefined, undefined, false));
+        game.defer(new SendDelegateToArea(player, title, 2, undefined, undefined, false));
       } else if (game.turmoil!.getDelegates(player.id) === 1 && game.turmoil!.lobby.has(player.id)) {
-        game.defer(new SendDelegateToArea(player, game, title, 2, undefined, undefined, true));
+        game.defer(new SendDelegateToArea(player, title, 2, undefined, undefined, true));
       }
       return undefined;
     }
@@ -44,7 +44,7 @@ export class CulturalMetropolis implements IProjectCard {
       requirements: CardRequirements.builder((b) => b.party(PartyName.UNITY)),
       description: 'Requires that Unity is ruling or that you have 2 delegates there. Decrease your energy production 1 step and increase your MC production 3 steps. Place a city tile. Place 2 delegates in 1 party.',
       renderData: CardRenderer.builder((b) => {
-        b.productionBox((pb) => {
+        b.production((pb) => {
           pb.minus().energy(1).br;
           pb.plus().megacredits(3);
         }).city().delegates(2);

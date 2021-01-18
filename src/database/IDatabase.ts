@@ -1,4 +1,5 @@
 import {Game, GameId, GameOptions, Score} from '../Game';
+import {SerializedGame} from '../SerializedGame';
 
 export interface IGameData {
     gameId: GameId;
@@ -36,7 +37,18 @@ export interface IGameData {
  * Finally, `players` as a number merely represents the number of players
  * in the game. Why, I have no idea, says kberg.
  */
+
+export type DbLoadCallback<T> = (err: any, game: T | undefined) => void
+
 export interface IDatabase {
+
+    /**
+     * Pulls most recent version of game
+     * @param game_id the game id to load
+     * @param cb called with game if exists, if game is undefined err will be truthy
+     */
+    getGame(game_id: string, cb: (err: any, game?: SerializedGame) => void): void;
+
     /**
      * Return a list of all `game_id`s.
      *
@@ -61,14 +73,10 @@ export interface IDatabase {
     getClonableGames(cb:(err: any, allGames:Array<IGameData>)=> void) : void;
 
     /**
-     * Saves the current state of the game at a supplied save point. Used for
+     * Saves the current state of the game. at a supplied save point. Used for
      * interim game updates.
-     *
-     * The `save_id` is managed outside of the database, and so it is up to the
-     * game to increment its state count.
      */
-    // TODO(kberg): why is `players` a useful first-class piece of data?
-    saveGameState(game_id: GameId, save_id: number, game: string, players: number): void;
+    saveGame(game: Game): void;
 
     /**
      * Stores the results of a game in perpetuity in a separate table from normal
@@ -83,24 +91,17 @@ export interface IDatabase {
     saveGameResults(game_id: GameId, players: number, generations: number, gameOptions: GameOptions, scores: Array<Score>): void;
 
     /**
-     * The meat behind player undo. Loads the game at the given save point
-     * and overwrites all data in `game`.
+     * The meat behind player undo. Loads the game at the given save point,
+     * and provides it in the callback.
      */
     // TODO(kberg): it's not clear to me how this save_id is known to
     // be the absolute prior game id, so that could use some clarification.
-    restoreGame(game_id: GameId, save_id: number, game: Game): void;
+    restoreGame(game_id: GameId, save_id: number, cb: DbLoadCallback<Game>): void;
 
     /**
-     * Load a game at its most recent save point.
-     * Overrites all data in `game`
+     * Load a game at save point 0, and provide it in the callback.
      */
-    restoreGameLastSave(game_id: GameId, game: Game, cb:(err: any) => void): void;
-
-    /**
-     * The meat behind cloning a game. Load a game at save point 0,
-     * and overrides all data in `game`.
-     */
-    restoreReferenceGame(game_id: GameId, game: Game, cb:(err: any) => void): void;
+    loadCloneableGame(game_id: GameId, cb: DbLoadCallback<SerializedGame>): void;
 
     /**
      * Deletes the last `rollbackCount` saves of the specified game.

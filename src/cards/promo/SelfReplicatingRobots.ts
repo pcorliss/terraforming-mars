@@ -42,12 +42,12 @@ export class SelfReplicatingRobots implements IProjectCard {
 
     public canAct(player: Player): boolean {
       return this.targetCards.length > 0 ||
-             player.cardsInHand.some((card) => card.tags.some((tag) => tag === Tags.SPACE || tag === Tags.STEEL));
+             player.cardsInHand.some((card) => card.tags.some((tag) => tag === Tags.SPACE || tag === Tags.BUILDING));
     }
 
     public action(player: Player, game: Game) {
       const orOptions = new OrOptions();
-      const selectableCards = player.cardsInHand.filter((card) => card.tags.some((tag) => tag === Tags.SPACE || tag === Tags.STEEL));
+      const selectableCards = player.cardsInHand.filter((card) => card.tags.some((tag) => tag === Tags.SPACE || tag === Tags.BUILDING));
 
       if (this.targetCards.length > 0) {
         const robotCards = this.targetCards.map((targetCard) => targetCard.card);
@@ -94,10 +94,9 @@ export class SelfReplicatingRobots implements IProjectCard {
       cardNumber: '210',
       requirements: CardRequirements.builder((b) => b.tag(Tags.SCIENCE, 2)),
       renderData: CardRenderer.builder((b) => {
-        b.effectBox((eb) => {
+        b.action('Reveal and place a SPACE OR BUILDING card here from hand, and place 2 resources on it, OR double the resources on a card here.', (eb) => {
           eb.empty().startAction.selfReplicatingRobots();
           eb.nbsp.or().nbsp.arrow().multiplierWhite().text('x2');
-          eb.description('Action: Reveal and place a SPACE OR BUILDING card here from hand, and place 2 resources on it, OR double the resources on a card here.');
         }).br;
         b.text('Effect: Card here may be played as if from hand with its cost reduced by the number of resources on it.', CardRenderItemSize.TINY, true);
       }),

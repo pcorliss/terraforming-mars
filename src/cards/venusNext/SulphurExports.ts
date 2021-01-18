@@ -16,7 +16,6 @@ export class SulphurExports implements IProjectCard {
     public tags = [Tags.VENUS, Tags.SPACE];
     public name = CardName.SULPHUR_EXPORTS;
     public cardType = CardType.AUTOMATED;
-    public hasRequirements = false;
 
     public canPlay(player: Player, game: Game): boolean {
       const venusMaxed = game.getVenusScaleLevel() === MAX_VENUS_SCALE;
@@ -37,7 +36,7 @@ export class SulphurExports implements IProjectCard {
       cardNumber: '250',
       renderData: CardRenderer.builder((b) => {
         b.venus(1).br;
-        b.productionBox((pb) => pb.megacredits(1).slash().venus(1).played);
+        b.production((pb) => pb.megacredits(1).slash().venus(1).played);
       }),
       description: 'Increase Venus 1 step. Increase your MC production 1 step for each Venus tag you have, including this.',
     };

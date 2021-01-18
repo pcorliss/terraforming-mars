@@ -14,7 +14,7 @@ describe('SpacePort', function() {
     card = new SpacePort();
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player);
   });
 
   it('Can\'t play without colony', function() {
@@ -22,7 +22,7 @@ describe('SpacePort', function() {
     expect(card.canPlay(player, game)).is.not.true;
   });
 
-  it('Can\'t play without colony', function() {
+  it('Can\'t play without energy production', function() {
     const colony = new Ceres();
     colony.colonies.push(player.id);
     game.colonies.push(colony);

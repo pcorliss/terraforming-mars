@@ -6,6 +6,10 @@ import {Player} from '../../Player';
 import {Game} from '../../Game';
 import {PartyName} from '../../turmoil/parties/PartyName';
 import {Resources} from '../../Resources';
+import {CardMetadata} from '../CardMetadata';
+import {CardRequirements} from '../CardRequirements';
+import {CardRenderer} from '../render/CardRenderer';
+import {CardRenderItemSize} from '../render/CardRenderItemSize';
 
 export class RedTourismWave implements IProjectCard {
     public cost = 3;
@@ -21,10 +25,21 @@ export class RedTourismWave implements IProjectCard {
     }
 
     public play(player: Player, game: Game) {
-      const amount = game.board.getEmptySpaces()
-        .filter((space) => game.board.getAdjacentSpaces(space).find((adj) => adj.tile !== undefined &&
-                adj.player === player) !== undefined).length;
+      const amount = game.board.getEmptySpaces().filter((space) =>
+        game.board.getAdjacentSpaces(space).some((adj) =>
+          adj.tile !== undefined && adj.player === player,
+        ),
+      ).length;
       player.setResource(Resources.MEGACREDITS, amount);
       return undefined;
+    }
+
+    public metadata: CardMetadata = {
+      cardNumber: 'T12',
+      requirements: CardRequirements.builder((b) => b.party(PartyName.REDS)),
+      renderData: CardRenderer.builder((b) => {
+        b.megacredits(1).slash().emptyTile('normal', CardRenderItemSize.SMALL).asterix();
+      }),
+      description: 'Requires that Reds are ruling or that you have 2 delegates there. Gain 1 MC from each EMPTY AREA ADJACENT TO YOUR TILES',
     }
 }

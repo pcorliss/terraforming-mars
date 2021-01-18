@@ -4,7 +4,7 @@ import {CardType} from '../CardType';
 import {Player} from '../../Player';
 import {Game} from '../../Game';
 import {SelectSpace} from '../../inputs/SelectSpace';
-import {ISpace} from '../../ISpace';
+import {ISpace} from '../../boards/ISpace';
 import {Resources} from '../../Resources';
 import {CardName} from '../../CardName';
 import {CardMetadata} from '../CardMetadata';
@@ -12,10 +12,9 @@ import {CardRenderer} from '../render/CardRenderer';
 
 export class FieldCappedCity implements IProjectCard {
     public cost = 29;
-    public tags = [Tags.CITY, Tags.STEEL, Tags.ENERGY];
+    public tags = [Tags.CITY, Tags.BUILDING, Tags.ENERGY];
     public name = CardName.FIELD_CAPPED_CITY;
     public cardType = CardType.AUTOMATED;
-    public hasRequirements = false;
 
     public canPlay(player: Player, game: Game): boolean {
       return game.board.getAvailableSpacesForCity(player).length > 0;
@@ -38,9 +37,9 @@ export class FieldCappedCity implements IProjectCard {
       cardNumber: 'X19',
       description: 'Increase your MC production 2 steps, increase your energy production 1 step, gain 3 plants, and place a city tile.',
       renderData: CardRenderer.builder((b) => {
-        b.productionBox((pb) => {
-          pb.plus().megacredits(2).br;
-          pb.plus().energy(1);
+        b.production((pb) => {
+          pb.megacredits(2).br;
+          pb.energy(1);
         }).nbsp.city().br;
         b.plants(3);
       }),

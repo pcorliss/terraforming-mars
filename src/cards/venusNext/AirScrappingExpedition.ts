@@ -18,7 +18,6 @@ export class AirScrappingExpedition implements IProjectCard {
   public tags = [Tags.VENUS];
   public name = CardName.AIR_SCRAPPING_EXPEDITION;
   public cardType = CardType.EVENT;
-  public hasRequirements = false;
 
   public canPlay(player: Player, game: Game): boolean {
     const venusMaxed = game.getVenusScaleLevel() === MAX_VENUS_SCALE;
@@ -32,7 +31,7 @@ export class AirScrappingExpedition implements IProjectCard {
   public play(player: Player, game: Game) {
     game.increaseVenusScaleLevel(player, 1);
     let floaterCards = player.getResourceCards(ResourceType.FLOATER);
-    floaterCards = floaterCards.filter((card) => card.tags.filter((cardTag) => cardTag === Tags.VENUS).length > 0);
+    floaterCards = floaterCards.filter((card) => card.tags.some((cardTag) => cardTag === Tags.VENUS));
     if (floaterCards.length === 0) {
       return undefined;
     }

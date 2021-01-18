@@ -8,7 +8,7 @@ import {CardRenderer} from '../render/CardRenderer';
 
 export class MeatIndustry implements IProjectCard {
     public cost = 5;
-    public tags = [Tags.STEEL];
+    public tags = [Tags.BUILDING];
     public name = CardName.MEAT_INDUSTRY;
     public cardType = CardType.ACTIVE;
 
@@ -19,9 +19,8 @@ export class MeatIndustry implements IProjectCard {
     public metadata: CardMetadata = {
       cardNumber: 'X30',
       renderData: CardRenderer.builder((b) => {
-        b.effectBox((eb) => {
+        b.effect('When you gain an animal to ANY CARD, gain 2MC.', (eb) => {
           eb.animals(1).asterix().startEffect.megacredits(2);
-          eb.description('Effect: When you gain an animal to ANY CARD, gain 2MC.');
         });
       }),
     }

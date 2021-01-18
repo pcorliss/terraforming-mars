@@ -10,14 +10,14 @@ describe('SupportedResearch', function() {
     const player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
     const gameOptions = setCustomGameOptions();
-    const game = new Game('foobar', [player, redPlayer], player, gameOptions);
+    const game = Game.newInstance('foobar', [player, redPlayer], player, gameOptions);
     expect(card.canPlay(player, game)).is.not.true;
 
     const scientists = game.turmoil!.getPartyByName(PartyName.SCIENTISTS)!;
     scientists.delegates.push(player.id, player.id);
     expect(card.canPlay(player, game)).is.true;
 
-    card.play(player, game);
+    card.play(player);
     expect(player.cardsInHand).has.lengthOf(2);
   });
 });

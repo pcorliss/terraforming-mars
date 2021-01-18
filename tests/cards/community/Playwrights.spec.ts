@@ -21,7 +21,7 @@ describe('Playwrights', function() {
     card = new Playwrights();
     player = TestPlayers.BLUE.newPlayer();
     player2 = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, player2], player);
+    game = Game.newInstance('foobar', [player, player2], player);
 
     card.play(player);
     player.corporationCard = card;
@@ -97,7 +97,7 @@ describe('Playwrights', function() {
         const deimosDown = new DeimosDown();
         expect(player.getCardCost(game, deimosDown)).to.eq(deimosDown.cost - 8);
 
-        player.playCard(game, deimosDown);
+        player.playCard(deimosDown);
         expect(player.getCardCost(game, deimosDown)).to.eq(deimosDown.cost); // no more discount
   });
 

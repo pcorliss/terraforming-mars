@@ -14,7 +14,7 @@ describe('NoctisCity', function() {
     card = new NoctisCity();
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player);
   });
 
   it('Can\'t play without energy production', function() {
@@ -29,7 +29,7 @@ describe('NoctisCity', function() {
     expect(player.getProduction(Resources.ENERGY)).to.eq(0);
     expect(player.getProduction(Resources.MEGACREDITS)).to.eq(3);
 
-    const noctis = game.getSpace(SpaceName.NOCTIS_CITY);
+    const noctis = game.board.getSpace(SpaceName.NOCTIS_CITY);
     expect(noctis.tile && noctis.tile.tileType).to.eq(TileType.CITY);
   });
 });

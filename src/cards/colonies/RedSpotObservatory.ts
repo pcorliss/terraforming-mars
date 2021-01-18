@@ -6,8 +6,10 @@ import {CardName} from '../../CardName';
 import {ResourceType} from '../../ResourceType';
 import {SelectOption} from '../../inputs/SelectOption';
 import {OrOptions} from '../../inputs/OrOptions';
-import {Game} from '../../Game';
 import {IResourceCard} from '../ICard';
+import {CardMetadata} from '../CardMetadata';
+import {CardRequirements} from '../CardRequirements';
+import {CardRenderer} from '../render/CardRenderer';
 
 export class RedSpotObservatory implements IProjectCard, IResourceCard {
     public cost = 17;
@@ -25,7 +27,7 @@ export class RedSpotObservatory implements IProjectCard, IResourceCard {
       return player.getTagCount(Tags.SCIENCE) >= 3;
     }
 
-    public action(player: Player, game: Game) {
+    public action(player: Player) {
       if (this.resourceCount < 1) {
         this.resourceCount++;
         return undefined;
@@ -34,7 +36,7 @@ export class RedSpotObservatory implements IProjectCard, IResourceCard {
       const opts: Array<SelectOption> = [];
 
       const addResource = new SelectOption('Add 1 floater on this card', 'Add floater', () => this.addResource());
-      const spendResource = new SelectOption('Remove 1 floater on this card to draw a card', 'Remove floater', () => this.spendResource(player, game));
+      const spendResource = new SelectOption('Remove 1 floater on this card to draw a card', 'Remove floater', () => this.spendResource(player));
 
       opts.push(spendResource);
       opts.push(addResource);
@@ -47,19 +49,35 @@ export class RedSpotObservatory implements IProjectCard, IResourceCard {
       return undefined;
     }
 
-    private spendResource(player: Player, game: Game) {
+    private spendResource(player: Player) {
       this.resourceCount--;
-      player.cardsInHand.push(game.dealer.dealCard());
+      player.drawCard();
       return undefined;
     }
 
-    public play(player: Player, game: Game) {
-      player.cardsInHand.push(game.dealer.dealCard());
-      player.cardsInHand.push(game.dealer.dealCard());
+    public play(player: Player) {
+      player.drawCard(2);
       return undefined;
     }
 
     public getVictoryPoints(): number {
       return 2;
+    }
+
+    public metadata: CardMetadata = {
+      cardNumber: 'C32',
+      requirements: CardRequirements.builder((b) => b.tag(Tags.SCIENCE, 3)),
+      renderData: CardRenderer.builder((b) => {
+        b.action('Add 1 floater to this card, or spend 1 floater here to draw a card.', (eb) => {
+          eb.empty().arrow().floaters(1).or();
+          eb.floaters(1).startAction.cards(1);
+        }).br;
+        b.cards(2);
+      }),
+      description: {
+        text: 'Requires 3 Science tags. Draw 2 cards.',
+        align: 'left',
+      },
+      victoryPoints: 2,
     }
 }

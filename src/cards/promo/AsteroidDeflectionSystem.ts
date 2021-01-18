@@ -15,11 +15,10 @@ import {CardRenderItemSize} from '../render/CardRenderItemSize';
 export class AsteroidDeflectionSystem implements IActionCard, IProjectCard, IResourceCard {
   public name = CardName.ASTEROID_DEFLECTION_SYSTEM;
   public cost = 13;
-  public tags = [Tags.SPACE, Tags.EARTH, Tags.STEEL];
+  public tags = [Tags.SPACE, Tags.EARTH, Tags.BUILDING];
   public resourceType = ResourceType.ASTEROID;
   public resourceCount: number = 0;
   public cardType = CardType.ACTIVE;
-  public hasRequirements = false;
 
   public canPlay(player: Player): boolean {
     return player.getProduction(Resources.ENERGY) >= 1;
@@ -48,12 +47,15 @@ export class AsteroidDeflectionSystem implements IActionCard, IProjectCard, IRes
   public metadata: CardMetadata = {
     cardNumber: 'X27',
     renderData: CardRenderer.builder((b) => {
-      b.effectBox((eb) => {
+      b.action('REVEAL AND DISCARD the top card of the deck. If it has a space tag, add an asteroid here.', (eb) => {
         eb.empty().startAction.cards(1).asterix().nbsp.space().played.colon().asteroids(1);
-        eb.description('Action: REVEAL AND DISCARD the top card of the deck. If it has a space tag, add an asteroid here.');
       }).br;
-      b.productionBox((pb) => pb.minus().energy(1)).text('opponents may not remove your plants', CardRenderItemSize.SMALL, true);
+      b.production((pb) => pb.minus().energy(1)).text('opponents may not remove your plants', CardRenderItemSize.SMALL, true);
     }),
+    description: {
+      text: 'Decrease your energy production 1 step. 1VP per asteroid on this card.',
+      align: 'left',
+    },
     victoryPoints: CardRenderDynamicVictoryPoints.asteroids(1, 1),
   }
 }

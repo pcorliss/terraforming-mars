@@ -8,10 +8,11 @@ import {ResourceType} from '../../ResourceType';
 import {SelectCard} from '../../inputs/SelectCard';
 import {ICard} from '../ICard';
 import {CardName} from '../../CardName';
-import {LogHelper} from '../../components/LogHelper';
+import {LogHelper} from '../../LogHelper';
 import {CardMetadata} from '../CardMetadata';
 import {CardRequirements} from '../CardRequirements';
 import {CardRenderer} from '../render/CardRenderer';
+import {GlobalParameter} from '../../GlobalParameter';
 
 export class FreyjaBiodomes implements IProjectCard {
     public cost = 14;
@@ -19,7 +20,7 @@ export class FreyjaBiodomes implements IProjectCard {
     public name = CardName.FREYJA_BIODOMES;
     public cardType = CardType.AUTOMATED;
     public canPlay(player: Player, game: Game): boolean {
-      return player.getProduction(Resources.ENERGY) >= 1 && game.getVenusScaleLevel() >= 10 - (2 * player.getRequirementsBonus(game, true));
+      return player.getProduction(Resources.ENERGY) >= 1 && game.checkMinRequirements(player, GlobalParameter.VENUS, 10);
     }
     public getResCards(player: Player): ICard[] {
       let resourceCards = player.getResourceCards(ResourceType.ANIMAL);
@@ -27,7 +28,7 @@ export class FreyjaBiodomes implements IProjectCard {
       return resourceCards.filter((card) => card.tags.indexOf(Tags.VENUS) !== -1);
     }
 
-    public play(player: Player, game: Game) {
+    public play(player: Player) {
       const cards = this.getResCards(player);
 
       if (cards.length > 1) {
@@ -39,7 +40,7 @@ export class FreyjaBiodomes implements IProjectCard {
             player.addResourceTo(foundCards[0], 2);
             player.addProduction(Resources.ENERGY, -1);
             player.addProduction(Resources.MEGACREDITS, 2);
-            LogHelper.logAddResource(game, player, foundCards[0], 2);
+            LogHelper.logAddResource(player, foundCards[0], 2);
             return undefined;
           },
         );
@@ -47,7 +48,7 @@ export class FreyjaBiodomes implements IProjectCard {
 
       if (cards.length === 1) {
         player.addResourceTo(cards[0], 2);
-        LogHelper.logAddResource(game, player, cards[0], 2);
+        LogHelper.logAddResource(player, cards[0], 2);
       }
 
       player.addProduction(Resources.ENERGY, -1);
@@ -63,7 +64,7 @@ export class FreyjaBiodomes implements IProjectCard {
       requirements: CardRequirements.builder((b) => b.venus(10)),
       renderData: CardRenderer.builder((b) => {
         b.microbes(2).secondaryTag(Tags.VENUS).or().animals(2).secondaryTag(Tags.VENUS).br;
-        b.productionBox((pb) => pb.minus().energy(1).nbsp.plus().megacredits(2));
+        b.production((pb) => pb.minus().energy(1).nbsp.plus().megacredits(2));
       }),
       description: {
         text: 'Requires 10% on the Venus track. Add 2 Microbes or 2 Animals to another Venus card. Production: energy -1, MC +2.',

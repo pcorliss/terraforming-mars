@@ -28,7 +28,7 @@ describe('RoboticWorkforce', function() {
     card = new RoboticWorkforce();
     player = TestPlayers.BLUE.newPlayer();
     redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player, setCustomGameOptions({moonExpansion: true}));
   });
 
   it('Can\'t play if no building cards to copy', function() {
@@ -68,7 +68,7 @@ describe('RoboticWorkforce', function() {
   });
 
   it('Should work with Capital (Ares expansion)', function() {
-    game = new Game('foobar', [player, redPlayer], player, ARES_OPTIONS_NO_HAZARDS);
+    game = Game.newInstance('foobar', [player, redPlayer], player, ARES_OPTIONS_NO_HAZARDS);
     const capitalAres = new CapitalAres();
     player.playedCards.push(capitalAres);
 
@@ -84,7 +84,7 @@ describe('RoboticWorkforce', function() {
   });
 
   it('Should work with Solar Farm (Ares expansion)', function() {
-    game = new Game('foobar', [player, redPlayer], player, ARES_OPTIONS_NO_HAZARDS);
+    game = Game.newInstance('foobar', [player, redPlayer], player, ARES_OPTIONS_NO_HAZARDS);
     const solarFarm = new SolarFarm();
 
     // This space should have 2 plants bonus on default map
@@ -121,14 +121,13 @@ describe('RoboticWorkforce', function() {
   });
 
   it('Has all building cards set up', function() {
-    const roboticWorkforce = card;
     const researchCoordination = new ResearchCoordination();
-    const gameOptions = setCustomGameOptions();
+    const gameOptions = setCustomGameOptions({moonExpansion: true});
     const productions = [Resources.MEGACREDITS, Resources.STEEL, Resources.TITANIUM, Resources.PLANTS, Resources.ENERGY, Resources.HEAT];
     ALL_CARD_MANIFESTS.forEach((manifest) => {
-      manifest.projectCards.cards.forEach((c) => {
+      manifest.projectCards.factories.forEach((c) => {
         const card = new c.Factory();
-        if (card.tags.includes(Tags.STEEL) && card.play !== undefined) {
+        if (card.tags.includes(Tags.BUILDING) && card.play !== undefined) {
           // Solar Farm is a pain to test so let's just say it's fine
           if (card.name === CardName.SOLAR_FARM) {
             return;
@@ -137,7 +136,7 @@ describe('RoboticWorkforce', function() {
           // Create new players, set all productions to 2 and place some tiles
           player = TestPlayers.BLUE.newPlayer();
           redPlayer = TestPlayers.RED.newPlayer();
-          game = new Game('foobar', [player, redPlayer], player, gameOptions);
+          game = Game.newInstance('foobar', [player, redPlayer], player, gameOptions);
           resetBoard(game);
           game.addCityTile(player, '17');
           game.addCityTile(player, '19');
@@ -173,22 +172,22 @@ describe('RoboticWorkforce', function() {
           // Now if any of the production changed, that means the card has a production box
           if (productions.filter((prod) => player.getProduction(prod) !== 2).length > 0) {
             if (card.cardType === CardType.CORPORATION) {
-              expect(roboticWorkforce.corporationCardsNames.includes(card.name), card.name + ' is missing in corporationCardsNames').is.true;
+              expect(RoboticWorkforce.corporationCardsNames.includes(card.name), card.name + ' is missing in corporationCardsNames').is.true;
             } else {
-              expect(roboticWorkforce.builderCardsNames.includes(card.name), card.name + ' is missing in builderCardsNames').is.true;
+              expect(RoboticWorkforce.builderCardsNames.includes(card.name), card.name + ' is missing in builderCardsNames').is.true;
             }
           } else {
             if (card.cardType === CardType.CORPORATION) {
-              expect(roboticWorkforce.corporationCardsNames.includes(card.name), card.name + ' is mistakenly included in corporationCardsNames').is.false;
+              expect(RoboticWorkforce.corporationCardsNames.includes(card.name), card.name + ' is mistakenly included in corporationCardsNames').is.false;
             } else {
-              expect(roboticWorkforce.builderCardsNames.includes(card.name), card.name + ' is mistakenly included in builderCardsNames').is.false;
+              expect(RoboticWorkforce.builderCardsNames.includes(card.name), card.name + ' is mistakenly included in builderCardsNames').is.false;
             }
           }
         } else {
           if (card.cardType === CardType.CORPORATION) {
-            expect(roboticWorkforce.corporationCardsNames.includes(card.name), card.name + ' is mistakenly included in corporationCardsNames').is.false;
+            expect(RoboticWorkforce.corporationCardsNames.includes(card.name), card.name + ' is mistakenly included in corporationCardsNames').is.false;
           } else {
-            expect(roboticWorkforce.builderCardsNames.includes(card.name), card.name + ' is mistakenly included in builderCardsNames').is.false;
+            expect(RoboticWorkforce.builderCardsNames.includes(card.name), card.name + ' is mistakenly included in builderCardsNames').is.false;
           }
         }
       });

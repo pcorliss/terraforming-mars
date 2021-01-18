@@ -13,7 +13,7 @@ describe('SymbioticFungus', function() {
     card = new SymbioticFungus();
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player);
   });
 
   it('Can\'t play', function() {
@@ -31,13 +31,13 @@ describe('SymbioticFungus', function() {
 
   it('Should act - single target', function() {
     player.playedCards.push(new Ants());
-    card.action(player, game);
+    card.action(player);
     expect(player.getResourcesOnCard(player.playedCards[0])).to.eq(1);
   });
 
   it('Should act - multiple targets', function() {
     player.playedCards.push(new Ants(), new Decomposers());
-    const action = card.action(player, game);
+    const action = card.action(player);
     expect(action).is.not.undefined;
 
         action!.cb([player.playedCards[0]]);

@@ -9,6 +9,7 @@ import {SelectOption} from '../../inputs/SelectOption';
 import {CardMetadata} from '../CardMetadata';
 import {CardRenderer} from '../render/CardRenderer';
 import {CardRenderItemSize} from '../render/CardRenderItemSize';
+import {LogHelper} from '../../LogHelper';
 
 export class LunarExports implements IProjectCard {
     public cost = 19;
@@ -18,12 +19,14 @@ export class LunarExports implements IProjectCard {
 
     public play(player: Player) {
       return new OrOptions(
-        new SelectOption('Increase your plant production by 2', 'Increase +plants', () => {
-          player.addProduction(Resources.PLANTS, 2);
-          return undefined;
-        }),
         new SelectOption('Increase your MC production by 5', 'Increase +MC', () => {
           player.addProduction(Resources.MEGACREDITS, 5);
+          LogHelper.logGainProduction(player, Resources.MEGACREDITS, 5);
+          return undefined;
+        }),
+        new SelectOption('Increase your plant production by 2', 'Increase +plants', () => {
+          player.addProduction(Resources.PLANTS, 2);
+          LogHelper.logGainProduction(player, Resources.PLANTS, 2);
           return undefined;
         }),
       );
@@ -31,7 +34,7 @@ export class LunarExports implements IProjectCard {
     public metadata: CardMetadata = {
       cardNumber: 'C21',
       renderData: CardRenderer.builder((b) => {
-        b.productionBox((pb) => {
+        b.production((pb) => {
           pb.plants(2).or(CardRenderItemSize.SMALL).megacredits(5);
         });
       }),

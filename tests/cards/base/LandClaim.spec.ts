@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {BoardName} from '../../../src/BoardName';
+import {BoardName} from '../../../src/boards/BoardName';
 import {LandClaim} from '../../../src/cards/base/LandClaim';
 import * as constants from '../../../src/constants';
 import {Game} from '../../../src/Game';
@@ -12,7 +12,7 @@ describe('LandClaim', function() {
     const card = new LandClaim();
     const player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    const game = new Game('foobar', [player, redPlayer], player);
+    const game = Game.newInstance('foobar', [player, redPlayer], player);
     const action = card.play(player, game);
     expect(action).is.not.undefined;
     const landSpace = game.board.getAvailableSpacesOnLand(player)[0];
@@ -24,7 +24,7 @@ describe('LandClaim', function() {
     const card = new LandClaim();
     const player = TestPlayers.BLUE.newPlayer();
     const player2 = TestPlayers.RED.newPlayer();
-    const game = new Game('foobar', [player, player2], player, setCustomGameOptions({
+    const game = Game.newInstance('foobar', [player, player2], player, setCustomGameOptions({
       boardName: BoardName.HELLAS,
     }));
     const action = card.play(player, game) as SelectSpace;

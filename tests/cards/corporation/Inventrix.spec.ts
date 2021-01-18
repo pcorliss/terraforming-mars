@@ -11,7 +11,7 @@ describe('Inventrix', function() {
     card = new Inventrix();
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player);
   });
 
   it('Should play', function() {
@@ -20,7 +20,7 @@ describe('Inventrix', function() {
   });
 
   it('Should take initial action', function() {
-    const action = card.initialAction(player, game);
+    const action = card.initialAction(player);
     expect(action).is.undefined;
     expect(player.cardsInHand).has.lengthOf(3);
   });

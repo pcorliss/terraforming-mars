@@ -15,7 +15,7 @@ describe('ByElection', function() {
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
     const gameOptions = setCustomGameOptions();
-    game = new Game('foobar', [player, redPlayer], player, gameOptions);
+    game = Game.newInstance('foobar', [player, redPlayer], player, gameOptions);
   });
 
   it('Should play', function() {
@@ -28,6 +28,9 @@ describe('ByElection', function() {
 
     const turmoil = game.turmoil!;
     expect(turmoil.playersInfluenceBonus.get(player.id)).to.eq(1);
-    expect(turmoil.rulingParty!.name).to.eq(PartyName.MARS);
+
+    const rulingParty = turmoil.rulingParty;
+    expect(rulingParty.name).to.eq(PartyName.MARS);
+    expect(turmoil.politicalAgendasData!.currentAgenda).deep.eq({bonusId: 'mb01', policyId: 'mfp01'});
   });
 });

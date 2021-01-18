@@ -6,14 +6,14 @@ import {CardName} from '../../CardName';
 import {Resources} from '../../Resources';
 import {Game} from '../../Game';
 import {SelectSpace} from '../../inputs/SelectSpace';
-import {ISpace} from '../../ISpace';
+import {ISpace} from '../../boards/ISpace';
 import {CardMetadata} from '../CardMetadata';
 import {CardRequirements} from '../CardRequirements';
 import {CardRenderer} from '../render/CardRenderer';
 
 export class SpacePort implements IProjectCard {
     public cost = 22;
-    public tags = [Tags.CITY, Tags.STEEL];
+    public tags = [Tags.CITY, Tags.BUILDING];
     public name = CardName.SPACE_PORT;
     public cardType = CardType.AUTOMATED;
 
@@ -41,7 +41,7 @@ export class SpacePort implements IProjectCard {
       cardNumber: 'C39',
       requirements: CardRequirements.builder((b) => b.colonies()),
       renderData: CardRenderer.builder((b) => {
-        b.productionBox((pb) => {
+        b.production((pb) => {
           pb.minus().energy(1).br;
           pb.plus().megacredits(4);
         }).nbsp.city().br;

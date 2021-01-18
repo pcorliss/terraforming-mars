@@ -17,7 +17,7 @@ describe('MarketManipulation', function() {
     card = new MarketManipulation();
     player = TestPlayers.BLUE.newPlayer();
     player2 = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, player2], player);
+    game = Game.newInstance('foobar', [player, player2], player);
     luna = new Luna();
   });
 
@@ -42,7 +42,7 @@ describe('MarketManipulation', function() {
     game.gameOptions.coloniesExtension = true;
     expect(card.canPlay(player, game)).is.not.true;
 
-    player.playCard(game, new Pets());
+    player.playCard(new Pets());
     expect(card.canPlay(player, game)).is.true;
   });
 });

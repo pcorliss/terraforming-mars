@@ -23,8 +23,8 @@ describe('EcologicalSurvey', function() {
     card = new EcologicalSurvey();
     player = TestPlayers.BLUE.newPlayer();
     redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player, ARES_OPTIONS_NO_HAZARDS);
-    game.board = new EmptyBoard();
+    game = Game.newInstance('foobar', [player, redPlayer], player, ARES_OPTIONS_NO_HAZARDS);
+    game.board = EmptyBoard.newInstance();
   });
 
   it('Can play', function() {

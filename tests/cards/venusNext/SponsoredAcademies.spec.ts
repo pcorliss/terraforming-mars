@@ -14,13 +14,13 @@ describe('SponsoredAcademies', function() {
     const card3 = new Tardigrades();
     const player = TestPlayers.BLUE.newPlayer();
     const player2 = TestPlayers.RED.newPlayer();
-    const game = new Game('foobar', [player, player2], player);
+    const game = Game.newInstance('foobar', [player, player2], player);
     player.cardsInHand.push(card);
     expect(card.canPlay(player)).is.not.true;
     player.cardsInHand.push(card2, card3);
     expect(card.canPlay(player)).is.true;
 
-    player.playCard(game, card);
+    player.playCard(card);
     const discardCard = game.deferredActions.shift()!.execute() as SelectCard<IProjectCard>;
     expect(discardCard instanceof SelectCard).is.true;
 

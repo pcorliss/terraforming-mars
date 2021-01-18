@@ -13,7 +13,7 @@ describe('PointLuna', function() {
   beforeEach(function() {
     card = new PointLuna();
     player = TestPlayers.BLUE.newPlayer();
-    game = new Game('foobar', [player], player);
+    game = Game.newInstance('foobar', [player], player);
     player.corporationCard = card;
   });
 
@@ -26,7 +26,7 @@ describe('PointLuna', function() {
   });
 
   it('Should play', function() {
-    card.play(player, game);
+    card.play(player);
     expect(player.getProduction(Resources.TITANIUM)).to.eq(1);
     expect(player.cardsInHand).has.lengthOf(1);
   });

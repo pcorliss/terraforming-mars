@@ -12,7 +12,7 @@ import {CardRenderer} from '../render/CardRenderer';
 
 export class MartianZoo implements IProjectCard, IResourceCard {
     public cost = 12;
-    public tags = [Tags.ANIMAL, Tags.STEEL];
+    public tags = [Tags.ANIMAL, Tags.BUILDING];
     public name = CardName.MARTIAN_ZOO;
     public cardType = CardType.ACTIVE;
     public resourceType = ResourceType.ANIMAL;
@@ -47,15 +47,13 @@ export class MartianZoo implements IProjectCard, IResourceCard {
 
     public metadata: CardMetadata = {
       cardNumber: 'C24',
-      requirements: CardRequirements.builder((b) => b.cities(2)),
+      requirements: CardRequirements.builder((b) => b.cities(2).any()),
       renderData: CardRenderer.builder((b) => {
-        b.effectBox((eb) => {
+        b.effect('When you play an Earth tag, place an animal here.', (eb) => {
           eb.earth().played.startEffect.animals(1);
-          eb.description('Effect: When you play an Earth tag, place an animal here.');
         }).br;
-        b.effectBox((eb) => {
+        b.action('Gain 1MC per animal here.', (eb) => {
           eb.empty().startAction.megacredits(1).slash().animals(1);
-          eb.description('Action: Gain 1MC per animal here.');
         });
       }),
       description: {

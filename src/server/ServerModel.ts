@@ -1,13 +1,13 @@
-import {AndOptions} from '../inputs/AndOptions';
 import {CardModel} from '../models/CardModel';
 import {ColonyModel} from '../models/ColonyModel';
 import {Color} from '../Color';
-import {Game} from '../Game';
+import {Game, GameOptions} from '../Game';
 import {GameHomeModel} from '../models/GameHomeModel';
+import {GameOptionsModel} from '../models/GameOptionsModel';
 import {ICard} from '../cards/ICard';
 import {IProjectCard} from '../cards/IProjectCard';
-import {ISpace} from '../ISpace';
-import {OrOptions} from '../inputs/OrOptions';
+import {Board} from '../boards/Board';
+import {ISpace} from '../boards/ISpace';
 import {Player} from '../Player';
 import {PlayerInput} from '../PlayerInput';
 import {PlayerInputModel} from '../models/PlayerInputModel';
@@ -16,10 +16,10 @@ import {PlayerModel} from '../models/PlayerModel';
 import {SelectAmount} from '../inputs/SelectAmount';
 import {SelectCard} from '../inputs/SelectCard';
 import {SelectHowToPay} from '../inputs/SelectHowToPay';
-import {SelectHowToPayForCard} from '../inputs/SelectHowToPayForCard';
+import {SelectHowToPayForProjectCard} from '../inputs/SelectHowToPayForProjectCard';
 import {SelectPlayer} from '../inputs/SelectPlayer';
 import {SelectSpace} from '../inputs/SelectSpace';
-import {SpaceModel} from '../models/SpaceModel';
+import {SpaceHighlight, SpaceModel} from '../models/SpaceModel';
 import {TileType} from '../TileType';
 import {Phase} from '../Phase';
 import {Resources} from '../Resources';
@@ -30,14 +30,15 @@ import {
 } from '../models/ClaimedMilestoneModel';
 import {FundedAwardModel, IAwardScore} from '../models/FundedAwardModel';
 import {
-  PartyModel,
-  DelegatesModel,
-  TurmoilModel,
+  getTurmoil,
 } from '../models/TurmoilModel';
 import {SelectDelegate} from '../inputs/SelectDelegate';
 import {SelectColony} from '../inputs/SelectColony';
 import {SelectProductionToLose} from '../inputs/SelectProductionToLose';
 import {ShiftAresGlobalParameters} from '../inputs/ShiftAresGlobalParameters';
+import {MoonModel} from '../models/MoonModel';
+import {CardName} from '../CardName';
+import {Units} from '../Units';
 
 export class Server {
   public static getGameModel(game: Game): GameHomeModel {
@@ -50,6 +51,7 @@ export class Server {
         id: player.id,
         name: player.name,
       })),
+      gameOptions: getGameOptionsAsModel(game.gameOptions),
     };
   }
 
@@ -57,8 +59,8 @@ export class Server {
     const turmoil = getTurmoil(game);
 
     return {
-      cardsInHand: getCards(player, player.cardsInHand, game, false),
-      draftedCards: getCards(player, player.draftedCards, game, false),
+      cardsInHand: getCards(player, player.cardsInHand, false),
+      draftedCards: getCards(player, player.draftedCards, false),
       milestones: getMilestones(game),
       awards: getAwards(game),
       cardCost: player.cardCost,
@@ -66,27 +68,29 @@ export class Server {
       corporationCard: getCorporationCard(player),
       energy: player.energy,
       energyProduction: player.getProduction(Resources.ENERGY),
+      gameOptions: getGameOptionsAsModel(game.gameOptions),
       generation: game.getGeneration(),
       heat: player.heat,
       heatProduction: player.getProduction(Resources.HEAT),
       id: player.id,
       megaCredits: player.megaCredits,
       megaCreditProduction: player.getProduction(Resources.MEGACREDITS),
+      moon: MoonModel.serialize(game),
       name: player.name,
       oceans: game.board.getOceansOnBoard(),
       oxygenLevel: game.getOxygenLevel(),
       phase: game.phase,
       plants: player.plants,
       plantProduction: player.getProduction(Resources.PLANTS),
-      playedCards: getCards(player, player.playedCards, game),
+      plantsAreProtected: player.plantsAreProtected(),
+      playedCards: getCards(player, player.playedCards),
       cardsInHandNbr: player.cardsInHand.length,
       citiesCount: player.getCitiesCount(game),
       coloniesCount: player.getColoniesCount(game),
       noTagsCount: player.getNoTagsCount(),
       influence: turmoil ? game.turmoil!.getPlayerInfluence(player) : 0,
-      coloniesExtension: game.gameOptions.coloniesExtension,
       players: getPlayers(game.getPlayers(), game),
-      spaces: getSpaces(game.board.spaces),
+      spaces: getSpaces(game.board),
       steel: player.steel,
       steelProduction: player.getProduction(Resources.STEEL),
       steelValue: player.getSteelValue(),
@@ -94,36 +98,30 @@ export class Server {
       terraformRating: player.getTerraformRating(),
       titanium: player.titanium,
       titaniumProduction: player.getProduction(Resources.TITANIUM),
-      titaniumValue: player.getTitaniumValue(game),
-      victoryPointsBreakdown: player.getVictoryPoints(game),
+      titaniumValue: player.getTitaniumValue(),
+      victoryPointsBreakdown: player.getVictoryPoints(),
       waitingFor: getWaitingFor(player.getWaitingFor()),
       isSoloModeWin: game.isSoloModeWin(),
       gameAge: game.gameAge,
       isActive: player.id === game.activePlayer,
-      corporateEra: game.gameOptions.corporateEra,
-      venusNextExtension: game.gameOptions.venusNextExtension,
       venusScaleLevel: game.getVenusScaleLevel(),
-      boardName: game.gameOptions.boardName,
       colonies: getColonies(game),
       tags: player.getAllTags(),
-      showOtherPlayersVP: game.gameOptions.showOtherPlayersVP,
       actionsThisGeneration: Array.from(player.getActionsThisGeneration()),
       fleetSize: player.getFleetSize(),
       tradesThisTurn: player.tradesThisTurn,
       turmoil: turmoil,
       selfReplicatingRobotsCards: player.getSelfReplicatingRobotsCards(game),
-      dealtCorporationCards: player.dealtCorporationCards,
-      dealtPreludeCards: player.dealtPreludeCards,
-      dealtProjectCards: player.dealtProjectCards,
+      dealtCorporationCards: getCardsAsCardModel(player.dealtCorporationCards, false),
+      dealtPreludeCards: getCardsAsCardModel(player.dealtPreludeCards, false),
+      dealtProjectCards: getCardsAsCardModel(player.dealtProjectCards, false),
       initialDraft: game.gameOptions.initialDraftVariant,
       needsToDraft: player.needsToDraft,
       deckSize: game.dealer.getDeckSize(),
-      randomMA: game.gameOptions.randomMA,
       actionsTakenThisRound: player.actionsTakenThisRound,
       passedPlayers: game.getPassedPlayers(),
-      aresExtension: game.gameOptions.aresExtension,
       aresData: game.aresData,
-      preludeExtension: game.gameOptions.preludeExtension,
+      timer: player.timer.serialize(),
     };
   }
 }
@@ -142,7 +140,7 @@ function getMilestones(game: Game): Array<ClaimedMilestoneModel> {
       game.getPlayers().forEach((player) => {
         scores.push({
           playerColor: player.color,
-          playerScore: milestone.getScore(player, game),
+          playerScore: milestone.getScore(player),
         });
       });
     }
@@ -172,7 +170,7 @@ function getAwards(game: Game): Array<FundedAwardModel> {
       game.getPlayers().forEach((player) => {
         scores.push({
           playerColor: player.color,
-          playerScore: award.getScore(player, game),
+          playerScore: award.getScore(player),
         });
       });
     }
@@ -196,16 +194,18 @@ function getCorporationCard(player: Player): CardModel | undefined {
     calculatedCost: 0,
     cardType: CardType.CORPORATION,
     isDisabled: player.corporationCard.isDisabled,
+    warning: player.corporationCard.warning,
   } as CardModel;
 }
 
 function getCardsAsCardModel(
   cards: Array<ICard>,
   showResouces: boolean = true,
+  reserveUnitMap?: Map<CardName, Units>,
 ): Array<CardModel> {
-  const result: Array<CardModel> = [];
+  const cardModel: Array<CardModel> = [];
   cards.forEach((card) => {
-    result.push({
+    cardModel.push({
       name: card.name,
       resources:
         card.resourceCount !== undefined && showResouces ?
@@ -215,10 +215,12 @@ function getCardsAsCardModel(
       calculatedCost: 0,
       cardType: CardType.AUTOMATED,
       isDisabled: false,
+      warning: card.warning,
+      reserveUnits: (reserveUnitMap !== undefined ? reserveUnitMap.get(card.name) : Units.EMPTY) || Units.EMPTY,
     });
   });
 
-  return result;
+  return cardModel;
 }
 
 function getWaitingFor(
@@ -227,7 +229,7 @@ function getWaitingFor(
   if (waitingFor === undefined) {
     return undefined;
   }
-  const result: PlayerInputModel = {
+  const playerInputModel: PlayerInputModel = {
     title: waitingFor.title,
     buttonLabel: waitingFor.buttonLabel,
     inputType: waitingFor.inputType,
@@ -248,64 +250,70 @@ function getWaitingFor(
     coloniesModel: undefined,
     payProduction: undefined,
     aresData: undefined,
+    selectBlueCardAction: false,
   };
   switch (waitingFor.inputType) {
   case PlayerInputTypes.AND_OPTIONS:
   case PlayerInputTypes.OR_OPTIONS:
-    result.options = [];
-    for (const option of (waitingFor as AndOptions | OrOptions)
-      .options) {
-      const subOption = getWaitingFor(option);
-      if (subOption !== undefined) {
-        result.options.push(subOption);
+  case PlayerInputTypes.SELECT_INITIAL_CARDS:
+    playerInputModel.options = [];
+    if (waitingFor.options !== undefined) {
+      for (const option of waitingFor.options) {
+        const subOption = getWaitingFor(option);
+        if (subOption !== undefined) {
+          playerInputModel.options.push(subOption);
+        }
       }
+    } else {
+      throw new Error('required options not defined');
     }
     break;
-  case PlayerInputTypes.SELECT_HOW_TO_PAY_FOR_CARD:
-    result.cards = getCardsAsCardModel(
-      (waitingFor as SelectHowToPayForCard).cards,
-      false,
-    );
-    result.microbes = (waitingFor as SelectHowToPayForCard).microbes;
-    result.floaters = (waitingFor as SelectHowToPayForCard).floaters;
-    result.canUseHeat = (waitingFor as SelectHowToPayForCard).canUseHeat;
+  case PlayerInputTypes.SELECT_HOW_TO_PAY_FOR_PROJECT_CARD:
+    const shtpfpc: SelectHowToPayForProjectCard = waitingFor as SelectHowToPayForProjectCard;
+    playerInputModel.cards = getCardsAsCardModel(shtpfpc.cards, false, shtpfpc.reserveUnitsMap);
+    playerInputModel.microbes = shtpfpc.microbes;
+    playerInputModel.floaters = shtpfpc.floaters;
+    playerInputModel.canUseHeat = shtpfpc.canUseHeat;
     break;
   case PlayerInputTypes.SELECT_CARD:
-    result.cards = getCardsAsCardModel(
+    playerInputModel.cards = getCardsAsCardModel(
       (waitingFor as SelectCard<ICard>).cards,
     );
-    result.maxCardsToSelect = (waitingFor as SelectCard<
+    playerInputModel.maxCardsToSelect = (waitingFor as SelectCard<
         ICard
       >).maxCardsToSelect;
-    result.minCardsToSelect = (waitingFor as SelectCard<
+    playerInputModel.minCardsToSelect = (waitingFor as SelectCard<
         ICard
       >).minCardsToSelect;
+    playerInputModel.selectBlueCardAction = (waitingFor as SelectCard<
+          ICard
+      >).selectBlueCardAction;
     break;
   case PlayerInputTypes.SELECT_COLONY:
-    result.coloniesModel = (waitingFor as SelectColony).coloniesModel;
+    playerInputModel.coloniesModel = (waitingFor as SelectColony).coloniesModel;
     break;
   case PlayerInputTypes.SELECT_HOW_TO_PAY:
-    result.amount = (waitingFor as SelectHowToPay).amount;
-    result.canUseSteel = (waitingFor as SelectHowToPay).canUseSteel;
-    result.canUseTitanium = (waitingFor as SelectHowToPay).canUseTitanium;
-    result.canUseHeat = (waitingFor as SelectHowToPay).canUseHeat;
+    playerInputModel.amount = (waitingFor as SelectHowToPay).amount;
+    playerInputModel.canUseSteel = (waitingFor as SelectHowToPay).canUseSteel;
+    playerInputModel.canUseTitanium = (waitingFor as SelectHowToPay).canUseTitanium;
+    playerInputModel.canUseHeat = (waitingFor as SelectHowToPay).canUseHeat;
     break;
   case PlayerInputTypes.SELECT_PLAYER:
-    result.players = (waitingFor as SelectPlayer).players.map(
+    playerInputModel.players = (waitingFor as SelectPlayer).players.map(
       (player) => player.color,
     );
     break;
   case PlayerInputTypes.SELECT_SPACE:
-    result.availableSpaces = (waitingFor as SelectSpace).availableSpaces.map(
+    playerInputModel.availableSpaces = (waitingFor as SelectSpace).availableSpaces.map(
       (space) => space.id,
     );
     break;
   case PlayerInputTypes.SELECT_AMOUNT:
-    result.min = (waitingFor as SelectAmount).min;
-    result.max = (waitingFor as SelectAmount).max;
+    playerInputModel.min = (waitingFor as SelectAmount).min;
+    playerInputModel.max = (waitingFor as SelectAmount).max;
     break;
   case PlayerInputTypes.SELECT_DELEGATE:
-    result.players = (waitingFor as SelectDelegate).players.map(
+    playerInputModel.players = (waitingFor as SelectDelegate).players.map(
       (player) => {
         if (player === 'NEUTRAL') {
           return 'NEUTRAL';
@@ -317,7 +325,7 @@ function getWaitingFor(
     break;
   case PlayerInputTypes.SELECT_PRODUCTION_TO_LOSE:
     const _player = (waitingFor as SelectProductionToLose).player;
-    result.payProduction = {
+    playerInputModel.payProduction = {
       cost: (waitingFor as SelectProductionToLose).unitsToLose,
       units: {
         megacredits: _player.getProduction(Resources.MEGACREDITS),
@@ -330,28 +338,32 @@ function getWaitingFor(
     };
     break;
   case PlayerInputTypes.SHIFT_ARES_GLOBAL_PARAMETERS:
-    result.aresData = (waitingFor as ShiftAresGlobalParameters).aresData;
+    playerInputModel.aresData = (waitingFor as ShiftAresGlobalParameters).aresData;
     break;
   }
-  return result;
+  return playerInputModel;
 }
 
 function getCards(
   player: Player,
   cards: Array<IProjectCard>,
-  game: Game,
   showResouces: boolean = true,
 ): Array<CardModel> {
   return cards.map((card) => ({
     resources: showResouces ? player.getResourcesOnCard(card) : undefined,
     resourceType: card.resourceType,
     name: card.name,
-    calculatedCost: player.getCardCost(game, card),
+    calculatedCost: player.getCardCost(player.game, card),
     cardType: card.cardType,
     isDisabled: false,
+    warning: card.warning,
+    reserveUnits: card.reserveUnits || Units.EMPTY,
   }));
 }
 
+// NOTE: This doesn't return a proper PlayerModel. It returns only a partial one, because
+// many of the field's values aren't set. That's why the code needs an "as PlayerModel" at
+// the end. Eyuch. Warning, surprises ahead.
 function getPlayers(players: Array<Player>, game: Game): Array<PlayerModel> {
   const turmoil = getTurmoil(game);
 
@@ -361,6 +373,9 @@ function getPlayers(players: Array<Player>, game: Game): Array<PlayerModel> {
       corporationCard: getCorporationCard(player),
       energy: player.energy,
       energyProduction: player.getProduction(Resources.ENERGY),
+      // TODO(kberg): strictly speaking, game options shouldn't be necessary on the
+      // individual player level.
+      gameOptions: getGameOptionsAsModel(game.gameOptions),
       heat: player.heat,
       heatProduction: player.getProduction(Resources.HEAT),
       id: game.phase === Phase.END ? player.id : player.color,
@@ -369,28 +384,25 @@ function getPlayers(players: Array<Player>, game: Game): Array<PlayerModel> {
       name: player.name,
       plants: player.plants,
       plantProduction: player.getProduction(Resources.PLANTS),
-      playedCards: getCards(player, player.playedCards, game),
+      plantsAreProtected: player.plantsAreProtected(),
+      playedCards: getCards(player, player.playedCards),
       cardsInHandNbr: player.cardsInHand.length,
       citiesCount: player.getCitiesCount(game),
       coloniesCount: player.getColoniesCount(game),
       noTagsCount: player.getNoTagsCount(),
       influence: turmoil ? game.turmoil!.getPlayerInfluence(player) : 0,
-      coloniesExtension: game.gameOptions.coloniesExtension,
       steel: player.steel,
       steelProduction: player.getProduction(Resources.STEEL),
       steelValue: player.getSteelValue(),
       terraformRating: player.getTerraformRating(),
       titanium: player.titanium,
       titaniumProduction: player.getProduction(Resources.TITANIUM),
-      titaniumValue: player.getTitaniumValue(game),
-      victoryPointsBreakdown: player.getVictoryPoints(game),
+      titaniumValue: player.getTitaniumValue(),
+      victoryPointsBreakdown: player.getVictoryPoints(),
       isActive: player.id === game.activePlayer,
-      venusNextExtension: game.gameOptions.venusNextExtension,
       venusScaleLevel: game.getVenusScaleLevel(),
-      boardName: game.gameOptions.boardName,
       colonies: getColonies(game),
       tags: player.getAllTags(),
-      showOtherPlayersVP: game.gameOptions.showOtherPlayersVP,
       actionsThisGeneration: Array.from(
         player.getActionsThisGeneration(),
       ),
@@ -403,7 +415,7 @@ function getPlayers(players: Array<Player>, game: Game): Array<PlayerModel> {
       needsToDraft: player.needsToDraft,
       deckSize: game.dealer.getDeckSize(),
       actionsTakenThisRound: player.actionsTakenThisRound,
-      preludeExtension: game.gameOptions.preludeExtension,
+      timer: player.timer.serialize(),
     } as PlayerModel;
   });
 }
@@ -425,121 +437,6 @@ function getColonies(game: Game): Array<ColonyModel> {
   );
 }
 
-function getTurmoil(game: Game): TurmoilModel | undefined {
-  if (game.gameOptions.turmoilExtension && game.turmoil) {
-    const parties = getParties(game);
-    let chairman; let dominant; let ruling;
-    if (game.turmoil.chairman) {
-      if (game.turmoil.chairman === 'NEUTRAL') {
-        chairman = Color.NEUTRAL;
-      } else {
-        chairman = game.getPlayerById(game.turmoil.chairman).color;
-      }
-    }
-    if (game.turmoil.dominantParty) {
-      dominant = game.turmoil.dominantParty.name;
-    }
-    if (game.turmoil.rulingParty) {
-      ruling = game.turmoil.rulingParty.name;
-    }
-
-    const lobby = Array.from(
-      game.turmoil.lobby,
-      (player) => game.getPlayerById(player).color,
-    );
-
-    const reserve = game.turmoil.getPresentPlayers().map((player) => {
-      const number = game.turmoil!.getDelegates(player);
-      if (player !== 'NEUTRAL') {
-        return {
-          color: game.getPlayerById(player).color,
-          number: number,
-        };
-      } else {
-        return {color: Color.NEUTRAL, number: number};
-      }
-    });
-
-    let distant;
-    if (game.turmoil.distantGlobalEvent) {
-      distant = {
-        name: game.turmoil.distantGlobalEvent.name,
-        description: game.turmoil.distantGlobalEvent.description,
-        revealed: game.turmoil.distantGlobalEvent.revealedDelegate,
-        current: game.turmoil.distantGlobalEvent.currentDelegate,
-      };
-    }
-
-    let coming;
-    if (game.turmoil.comingGlobalEvent) {
-      coming = {
-        name: game.turmoil.comingGlobalEvent.name,
-        description: game.turmoil.comingGlobalEvent.description,
-        revealed: game.turmoil.comingGlobalEvent.revealedDelegate,
-        current: game.turmoil.comingGlobalEvent.currentDelegate,
-      };
-    }
-
-    let current;
-    if (game.turmoil.currentGlobalEvent) {
-      current = {
-        name: game.turmoil.currentGlobalEvent.name,
-        description: game.turmoil.currentGlobalEvent.description,
-        revealed: game.turmoil.currentGlobalEvent.revealedDelegate,
-        current: game.turmoil.currentGlobalEvent.currentDelegate,
-      };
-    }
-
-    return {
-      chairman: chairman,
-      ruling: ruling,
-      dominant: dominant,
-      parties: parties,
-      lobby: lobby,
-      reserve: reserve,
-      distant: distant,
-      comming: coming,
-      current: current,
-    };
-  } else {
-    return undefined;
-  }
-}
-
-function getParties(game: Game): Array<PartyModel> {
-  if (game.gameOptions.turmoilExtension && game.turmoil) {
-    return game.turmoil.parties.map(function(party) {
-      const delegates: Array<DelegatesModel> = [];
-      party.getPresentPlayers().forEach((player) => {
-        const number = party.getDelegates(player);
-        if (player !== 'NEUTRAL') {
-          delegates.push({
-            color: game.getPlayerById(player).color,
-            number: number,
-          });
-        } else {
-          delegates.push({color: Color.NEUTRAL, number: number});
-        }
-      });
-      let partyLeader;
-      if (party.partyLeader) {
-        if (party.partyLeader === 'NEUTRAL') {
-          partyLeader = Color.NEUTRAL;
-        } else {
-          partyLeader = game.getPlayerById(party.partyLeader).color;
-        }
-      }
-      return {
-        name: party.name,
-        description: party.description,
-        partyLeader: partyLeader,
-        delegates: delegates,
-      };
-    });
-  }
-  return [];
-}
-
 // Oceans can't be owned so they shouldn't have a color associated with them
 // Land claim can have a color on a space without a tile
 function getColor(space: ISpace): Color | undefined {
@@ -555,8 +452,17 @@ function getColor(space: ISpace): Color | undefined {
   return undefined;
 }
 
-function getSpaces(spaces: Array<ISpace>): Array<SpaceModel> {
-  return spaces.map((space) => {
+function getSpaces(board: Board): Array<SpaceModel> {
+  const volcanicSpaceIds = board.getVolcanicSpaceIds();
+  const noctisCitySpaceIds = board.getNoctisCitySpaceIds();
+
+  return board.spaces.map((space) => {
+    let highlight: SpaceHighlight = undefined;
+    if (volcanicSpaceIds.includes(space.id)) {
+      highlight = 'volcanic';
+    } else if (noctisCitySpaceIds.includes(space.id)) {
+      highlight = 'noctis';
+    }
     return {
       x: space.x,
       y: space.y,
@@ -565,6 +471,34 @@ function getSpaces(spaces: Array<ISpace>): Array<SpaceModel> {
       spaceType: space.spaceType,
       tileType: space.tile && space.tile.tileType,
       color: getColor(space),
+      highlight: highlight,
     };
   });
+}
+
+function getGameOptionsAsModel(options: GameOptions): GameOptionsModel {
+  return {
+    aresExtension: options.aresExtension,
+    boardName: options.boardName,
+    cardsBlackList: options.cardsBlackList,
+    coloniesExtension: options.coloniesExtension,
+    communityCardsOption: options.communityCardsOption,
+    corporateEra: options.corporateEra,
+    draftVariant: options.draftVariant,
+    fastModeOption: options.fastModeOption,
+    includeVenusMA: options.includeVenusMA,
+    initialDraftVariant: options.initialDraftVariant,
+    moonExpansion: options.moonExpansion,
+    preludeExtension: options.preludeExtension,
+    promoCardsOption: options.promoCardsOption,
+    politicalAgendasExtension: options.politicalAgendasExtension,
+    showOtherPlayersVP: options.showOtherPlayersVP,
+    showTimers: options.showTimers,
+    shuffleMapOption: options.shuffleMapOption,
+    solarPhaseOption: options.solarPhaseOption,
+    soloTR: options.soloTR,
+    randomMA: options.randomMA,
+    turmoilExtension: options.turmoilExtension,
+    venusNextExtension: options.venusNextExtension,
+  };
 }

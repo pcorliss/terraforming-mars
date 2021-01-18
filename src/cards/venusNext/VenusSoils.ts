@@ -8,7 +8,7 @@ import {SelectCard} from '../../inputs/SelectCard';
 import {Game} from '../../Game';
 import {ICard} from '../ICard';
 import {CardName} from '../../CardName';
-import {LogHelper} from '../../components/LogHelper';
+import {LogHelper} from '../../LogHelper';
 import {MAX_VENUS_SCALE, REDS_RULING_POLICY_COST} from '../../constants';
 import {PartyHooks} from '../../turmoil/parties/PartyHooks';
 import {PartyName} from '../../turmoil/parties/PartyName';
@@ -20,7 +20,6 @@ export class VenusSoils implements IProjectCard {
     public tags = [Tags.VENUS, Tags.PLANT];
     public name = CardName.VENUS_SOILS;
     public cardType = CardType.AUTOMATED;
-    public hasRequirements = false;
 
     public canPlay(player: Player, game: Game): boolean {
       const venusMaxed = game.getVenusScaleLevel() === MAX_VENUS_SCALE;
@@ -41,7 +40,7 @@ export class VenusSoils implements IProjectCard {
 
       if (microbeCards.length === 1) {
         player.addResourceTo(microbeCards[0], 2);
-        LogHelper.logAddResource(game, player, microbeCards[0], 2);
+        LogHelper.logAddResource(player, microbeCards[0], 2);
         return undefined;
       }
 
@@ -51,7 +50,7 @@ export class VenusSoils implements IProjectCard {
         microbeCards,
         (foundCards: Array<ICard>) => {
           player.addResourceTo(foundCards[0], 2);
-          LogHelper.logAddResource(game, player, foundCards[0], 2);
+          LogHelper.logAddResource(player, foundCards[0], 2);
           return undefined;
         },
       );
@@ -60,7 +59,7 @@ export class VenusSoils implements IProjectCard {
       cardNumber: '257',
       renderData: CardRenderer.builder((b) => {
         b.venus(1).br;
-        b.productionBox((pb) => pb.plants(1)).microbes(2).asterix();
+        b.production((pb) => pb.plants(1)).microbes(2).asterix();
       }),
       description: 'Raise Venus 1 step. Increase your Plant production 1 step. Add 2 Microbes to ANOTHER card',
     }

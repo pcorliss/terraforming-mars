@@ -17,7 +17,7 @@ describe('AsteroidRights', function() {
     card = new AsteroidRights();
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player);
 
     player.playedCards.push(card);
     card.play();
@@ -38,11 +38,11 @@ describe('AsteroidRights', function() {
     const action = card.action(player, game) as OrOptions;
 
     // Gain 1 MC prod
-    action.options[0].cb();
+    action.options[1].cb();
     expect(player.getProduction(Resources.MEGACREDITS)).to.eq(1);
 
     // Gain 2 titanium
-    action.options[1].cb();
+    action.options[0].cb();
     expect(player.titanium).to.eq(2);
   });
 

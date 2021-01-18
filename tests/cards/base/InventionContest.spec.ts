@@ -8,8 +8,8 @@ describe('InventionContest', function() {
     const card = new InventionContest();
     const player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    const game = new Game('foobar', [player, redPlayer], player);
-    const action = card.play(player, game);
+    const game = Game.newInstance('foobar', [player, redPlayer], player);
+    const action = card.play(player)!;
     expect(action).is.not.undefined;
     action.cb([action.cards[0]]);
     expect(game.dealer.discarded).has.lengthOf(2);

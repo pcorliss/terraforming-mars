@@ -24,20 +24,31 @@ export const PlayerTags = Vue.component('player-tags', {
 
   methods: {
     showColonyCount: function(): boolean {
-      return this.player.coloniesExtension;
+      return this.player.gameOptions.coloniesExtension;
     },
     showInfluence: function(): boolean {
       return this.player.turmoil !== undefined;
     },
+    showVenus: function(): boolean {
+      return this.player.gameOptions.venusNextExtension;
+    },
+    showMoon: function(): boolean {
+      return this.player.gameOptions.moonExpansion;
+    },
     getTagsPlaceholders: function() {
       const tags: {[x: string]: Tags | SpecialTags} = {...Tags, ...SpecialTags};
-      if (!this.showColonyCount()) {
+      if (this.showColonyCount() === false) {
         delete tags.COLONY_COUNT;
       }
-      if (!this.showInfluence()) {
+      if (this.showInfluence() === false) {
         delete tags.INFLUENCE;
       }
-
+      if (this.showVenus() === false) {
+        delete tags.VENUS;
+      }
+      if (this.showMoon() === false) {
+        delete tags.MOON;
+      }
       return tags;
     },
     getCardCount: function(): number {
@@ -53,7 +64,7 @@ export const PlayerTags = Vue.component('player-tags', {
       return this.player.victoryPointsBreakdown.total;
     },
     hideVpCount: function(): boolean {
-      return !this.player.showOtherPlayersVP && !this.isActivePlayer;
+      return !this.player.gameOptions.showOtherPlayersVP && !this.isActivePlayer;
     },
     showShortTags: function(): boolean {
       if (this.hideZeroTags === true) return true;
@@ -91,8 +102,12 @@ export const PlayerTags = Vue.component('player-tags', {
                 <tag-count :tag="'cards'" :count="getCardCount()" :size="'big'" :type="'main'"/>
             </div>
             <div class="player-tags-secondary">
-                <tag-count v-if="showShortTags()" v-for="tag in player.tags" :key="tag.tag" :tag="tag.tag" :count="tag.count" :size="'big'" :type="'secondary'"/>
-                <tag-count v-if="! showShortTags()" v-for="tagName in getTagsPlaceholders()" :key="tagName" :tag="tagName" :count="getTagCount(tagName)" :size="'big'" :type="'secondary'"/>
+                <template v-if="showShortTags()">
+                    <tag-count v-for="tag in player.tags" :key="tag.tag" :tag="tag.tag" :count="tag.count" :size="'big'" :type="'secondary'"/>
+                </template>
+                <template v-else>
+                    <tag-count v-for="tagName in getTagsPlaceholders()" :key="tagName" :tag="tagName" :count="getTagCount(tagName)" :size="'big'" :type="'secondary'"/>
+                </template>
             </div>
         </div>
     `,

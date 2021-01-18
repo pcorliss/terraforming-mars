@@ -10,11 +10,10 @@ import {IActionCard, ICard, IResourceCard} from '../ICard';
 import {ResourceType} from '../../ResourceType';
 import {SelectCard} from '../../inputs/SelectCard';
 import {CardName} from '../../CardName';
-import {LogHelper} from '../../components/LogHelper';
+import {LogHelper} from '../../LogHelper';
 import {CardMetadata} from '../CardMetadata';
 import {CardRequirements} from '../CardRequirements';
 import {CardRenderer} from '../render/CardRenderer';
-import {CardRenderItemSize} from '../render/CardRenderItemSize';
 import {CardRenderDynamicVictoryPoints} from '../render/CardRenderDynamicVictoryPoints';
 
 export class Stratopolis implements IActionCard, IProjectCard, IResourceCard {
@@ -38,19 +37,19 @@ export class Stratopolis implements IActionCard, IProjectCard, IResourceCard {
 
     public getResCards(player: Player): ICard[] {
       const resourceCards = player.getResourceCards(ResourceType.FLOATER);
-      return resourceCards.filter((card) => card.tags.filter((cardTag) => cardTag === Tags.VENUS).length > 0);
+      return resourceCards.filter((card) => card.tags.some((cardTag) => cardTag === Tags.VENUS));
     }
 
     public canAct(): boolean {
       return true;
     }
 
-    public action(player: Player, game: Game) {
+    public action(player: Player) {
       const cards = this.getResCards(player);
 
       if (cards.length === 1) {
         player.addResourceTo(cards[0], 2);
-        LogHelper.logAddResource(game, player, cards[0], 2);
+        LogHelper.logAddResource(player, cards[0], 2);
         return undefined;
       }
 
@@ -60,7 +59,7 @@ export class Stratopolis implements IActionCard, IProjectCard, IResourceCard {
         cards,
         (foundCards: Array<ICard>) => {
           player.addResourceTo(foundCards[0], 2);
-          LogHelper.logAddResource(game, player, foundCards[0], 2);
+          LogHelper.logAddResource(player, foundCards[0], 2);
           return undefined;
         },
       );
@@ -70,12 +69,11 @@ export class Stratopolis implements IActionCard, IProjectCard, IResourceCard {
       cardNumber: '248',
       requirements: CardRequirements.builder((b) => b.tag(Tags.SCIENCE, 2)),
       renderData: CardRenderer.builder((b) => {
-        b.effectBox((eb) => {
+        b.action('Add 2 floaters to ANY VENUS CARD.', (eb) => {
           eb.empty().startAction.floaters(2).secondaryTag(Tags.VENUS);
-          eb.description('Action: Add 2 floaters to ANY VENUS CARD.');
         }).br;
-        b.productionBox((pb) => pb.megacredits(2)).city().asterix();
-        b.text('1 VP for every 3rd Floater on this card.', CardRenderItemSize.TINY, true);
+        b.production((pb) => pb.megacredits(2)).city().asterix();
+        b.vpText('1 VP for every 3rd Floater on this card.');
       }),
       description: {
         text: 'Requires 2 science tags. Increase your MC production 2 steps. Place a City tile ON THE RESERVED AREA',

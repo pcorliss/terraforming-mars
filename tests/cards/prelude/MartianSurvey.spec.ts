@@ -10,7 +10,7 @@ describe('MartianSurvey', function() {
   beforeEach(function() {
     card = new MartianSurvey();
     player = TestPlayers.BLUE.newPlayer();
-    game = new Game('foobar', [player], player);
+    game = Game.newInstance('foobar', [player], player);
   });
 
   it('Can\'t play', function() {
@@ -20,11 +20,7 @@ describe('MartianSurvey', function() {
 
   it('Should play', function() {
     expect(card.canPlay(player, game)).is.true;
-    card.play(player, game);
-    expect(game.deferredActions).has.lengthOf(1);
-
-    // Draw cards
-    game.deferredActions.runNext();
+    card.play(player);
 
     expect(card.getVictoryPoints()).to.eq(1);
     expect(player.cardsInHand).has.lengthOf(2);

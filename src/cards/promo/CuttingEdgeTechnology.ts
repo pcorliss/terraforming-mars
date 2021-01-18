@@ -6,6 +6,7 @@ import {Game} from '../../Game';
 import {CardName} from '../../CardName';
 import {CardMetadata} from '../CardMetadata';
 import {CardRenderer} from '../render/CardRenderer';
+import {AltSecondaryTag} from '../render/CardRenderItem';
 
 export class CuttingEdgeTechnology implements IProjectCard {
     public cost = 11;
@@ -18,7 +19,7 @@ export class CuttingEdgeTechnology implements IProjectCard {
     }
 
     public getCardDiscount(_player: Player, _game: Game, card: IProjectCard) {
-      if (card.canPlay && (card.hasRequirements === undefined || card.hasRequirements)) return 2;
+      if (card.metadata.requirements !== undefined) return 2;
       return 0;
     }
 
@@ -29,9 +30,8 @@ export class CuttingEdgeTechnology implements IProjectCard {
     public metadata: CardMetadata = {
       cardNumber: 'X17',
       renderData: CardRenderer.builder((b) => {
-        b.effectBox((eb) => {
-          eb.cards(1).secondaryTag('req').startEffect.megacredits(-2);
-          eb.description('Effect: When playing a card with a requirement, you pay 2 MC less for it.');
+        b.effect('When playing a card with a requirement, you pay 2 MC less for it.', (eb) => {
+          eb.cards(1).secondaryTag(AltSecondaryTag.REQ).startEffect.megacredits(-2);
         });
       }),
       victoryPoints: 1,

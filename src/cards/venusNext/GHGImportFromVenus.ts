@@ -16,7 +16,6 @@ export class GHGImportFromVenus implements IProjectCard {
     public tags = [Tags.SPACE, Tags.VENUS];
     public name = CardName.GHG_IMPORT_FROM_VENUS;
     public cardType = CardType.EVENT;
-    public hasRequirements = false;
 
     public canPlay(player: Player, game: Game): boolean {
       const venusMaxed = game.getVenusScaleLevel() === MAX_VENUS_SCALE;
@@ -36,7 +35,7 @@ export class GHGImportFromVenus implements IProjectCard {
       description: 'Raise Venus 1 step. Increase your heat production 3 steps.',
       cardNumber: '228',
       renderData: CardRenderer.builder((b) => {
-        b.venus(1).productionBox((pb) => {
+        b.venus(1).production((pb) => {
           pb.heat(3);
         });
       }),

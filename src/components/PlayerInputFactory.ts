@@ -11,8 +11,10 @@ export class PlayerInputFactory {
       return 'and-options';
     case PlayerInputTypes.SELECT_CARD:
       return 'select-card';
-    case PlayerInputTypes.SELECT_HOW_TO_PAY_FOR_CARD:
-      return 'select-how-to-pay-for-card';
+    case PlayerInputTypes.SELECT_HOW_TO_PAY_FOR_PROJECT_CARD:
+      return 'select-how-to-pay-for-project-card';
+    case PlayerInputTypes.SELECT_INITIAL_CARDS:
+      return 'select-initial-cards';
     case PlayerInputTypes.OR_OPTIONS:
       return 'or-options';
     case PlayerInputTypes.SELECT_OPTION:
@@ -25,8 +27,6 @@ export class PlayerInputFactory {
       return 'select-player';
     case PlayerInputTypes.SELECT_AMOUNT:
       return 'select-amount';
-    case PlayerInputTypes.SELECT_PARTY:
-      return 'select-party';
     case PlayerInputTypes.SELECT_DELEGATE:
       return 'select-party-player';
     case PlayerInputTypes.SELECT_COLONY:

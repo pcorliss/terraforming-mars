@@ -2,7 +2,6 @@ import {IProjectCard} from './../IProjectCard';
 import {Tags} from './../Tags';
 import {CardType} from './../CardType';
 import {Player} from '../../Player';
-import {Game} from '../../Game';
 import {IActionCard} from './../ICard';
 import {CardName} from '../../CardName';
 import {CardMetadata} from '../CardMetadata';
@@ -11,7 +10,7 @@ import {CardRenderer} from '../render/CardRenderer';
 
 export class SubCrustMeasurements implements IActionCard, IProjectCard {
     public cost = 20;
-    public tags = [Tags.SCIENCE, Tags.STEEL, Tags.EARTH];
+    public tags = [Tags.SCIENCE, Tags.BUILDING, Tags.EARTH];
     public cardType = CardType.ACTIVE;
     public name = CardName.SUB_CRUST_MEASUREMENTS;
 
@@ -31,8 +30,8 @@ export class SubCrustMeasurements implements IActionCard, IProjectCard {
       return 2;
     }
 
-    public action(player: Player, game: Game) {
-      player.cardsInHand.push(game.dealer.dealCard());
+    public action(player: Player) {
+      player.drawCard();
       return undefined;
     }
 
@@ -40,9 +39,8 @@ export class SubCrustMeasurements implements IActionCard, IProjectCard {
       cardNumber: 'X28',
       requirements: CardRequirements.builder((b) => b.tag(Tags.SCIENCE, 2)),
       renderData: CardRenderer.builder((b) => {
-        b.effectBox((eb) => {
+        b.action('Draw a card.', (eb) => {
           eb.empty().startAction.cards(1);
-          eb.description('Action: Draw a card.');
         });
       }),
       description: 'Requires 2 science tags.',

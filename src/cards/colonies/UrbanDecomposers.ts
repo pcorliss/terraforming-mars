@@ -13,7 +13,7 @@ import {CardRenderer} from '../render/CardRenderer';
 
 export class UrbanDecomposers implements IProjectCard {
     public cost = 6;
-    public tags = [Tags.MICROBES];
+    public tags = [Tags.MICROBE];
     public name = CardName.URBAN_DECOMPOSERS;
     public cardType = CardType.AUTOMATED;
 
@@ -30,7 +30,7 @@ export class UrbanDecomposers implements IProjectCard {
 
       const microbeCards = player.getResourceCards(ResourceType.MICROBE);
       if (microbeCards.length) {
-        game.defer(new AddResourcesToCard(player, game, ResourceType.MICROBE, 2));
+        game.defer(new AddResourcesToCard(player, ResourceType.MICROBE, {count: 2}));
       }
 
       return undefined;
@@ -39,7 +39,7 @@ export class UrbanDecomposers implements IProjectCard {
       cardNumber: 'C48',
       requirements: CardRequirements.builder((b) => b.colonies().cities()),
       renderData: CardRenderer.builder((b) => {
-        b.productionBox((pb) => pb.plants(1)).microbes(2).asterix();
+        b.production((pb) => pb.plants(1)).microbes(2).asterix();
       }),
       description: 'Requires that you have 1 city tile and 1 colony in play. Increase your plant production 1 step, and add 2 microbes to ANOTHER card.',
     }

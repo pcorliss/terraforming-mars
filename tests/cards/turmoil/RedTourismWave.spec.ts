@@ -13,14 +13,14 @@ describe('RedTourismWave', function() {
     const player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
     const gameOptions = setCustomGameOptions();
-    const game = new Game('foobar', [player, redPlayer], player, gameOptions);
+    const game = Game.newInstance('foobar', [player, redPlayer], player, gameOptions);
     expect(card.canPlay(player, game)).is.not.true;
 
     const reds = game.turmoil!.getPartyByName(PartyName.REDS)!;
     reds.delegates.push(player.id, player.id);
     expect(card.canPlay(player, game)).is.true;
 
-    const tharsis = game.getSpace(SpaceName.THARSIS_THOLUS);
+    const tharsis = game.board.getSpace(SpaceName.THARSIS_THOLUS);
     const lands = game.board.getAdjacentSpaces(tharsis).filter((space) => space.spaceType === SpaceType.LAND);
     game.addCityTile(player, lands[0].id);
     card.play(player, game);

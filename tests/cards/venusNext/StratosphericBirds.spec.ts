@@ -16,7 +16,7 @@ describe('StratosphericBirds', function() {
     card = new StratosphericBirds();
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player);
     deuteriumExport = new DeuteriumExport();
   });
 
@@ -85,16 +85,16 @@ describe('StratosphericBirds', function() {
 
     // 12 MC + 1 Dirigibles floater: Card is playable
     player.megaCredits = 12;
-    const selectHowToPayForCard = player.playProjectCard(game);
+    const SelectHowToPayForProjectCard = player.playProjectCard();
     expect(card.canPlay(player, game)).is.true;
 
     // Try to spend floater to pay for card: Throw an error
     expect(function() {
-      selectHowToPayForCard.cb(card, {steel: 0, heat: 0, titanium: 0, megaCredits: 9, microbes: 0, floaters: 1});
+      SelectHowToPayForProjectCard.cb(card, {steel: 0, heat: 0, titanium: 0, megaCredits: 9, microbes: 0, floaters: 1});
     }).to.throw('Cannot spend all floaters to play Stratospheric Birds');
 
     // Pay with MC only: Can play
-    selectHowToPayForCard.cb(card, {steel: 0, heat: 0, titanium: 0, megaCredits: 12, microbes: 0, floaters: 0});
+    SelectHowToPayForProjectCard.cb(card, {steel: 0, heat: 0, titanium: 0, megaCredits: 12, microbes: 0, floaters: 0});
         game.deferredActions.shift()!.execute(); // Remove floater
         expect(dirigibles.resourceCount).to.eq(0);
   });
@@ -108,7 +108,7 @@ describe('StratosphericBirds', function() {
     (game as any).venusScaleLevel = 12;
     player.megaCredits = 3;
 
-    const selectHowToPayForCard = player.playProjectCard(game);
+    const selectHowToPayForCard = player.playProjectCard();
     expect(card.canPlay(player, game)).is.true;
 
     // Spend all 3 floaters from Dirigibles to pay for the card

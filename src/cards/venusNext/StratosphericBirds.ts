@@ -10,8 +10,8 @@ import {RemoveResourcesFromCard} from '../../deferredActions/RemoveResourcesFrom
 import {CardMetadata} from '../CardMetadata';
 import {CardRequirements} from '../CardRequirements';
 import {CardRenderer} from '../render/CardRenderer';
-import {CardRenderItemSize} from '../render/CardRenderItemSize';
 import {CardRenderDynamicVictoryPoints} from '../render/CardRenderDynamicVictoryPoints';
+import {GlobalParameter} from '../../GlobalParameter';
 
 export class StratosphericBirds implements IActionCard, IProjectCard, IResourceCard {
     public cost = 12;
@@ -24,7 +24,7 @@ export class StratosphericBirds implements IActionCard, IProjectCard, IResourceC
       const cardsWithFloater = player.getCardsWithResources().filter((card) => card.resourceType === ResourceType.FLOATER);
       if (cardsWithFloater.length === 0) return false;
 
-      const meetsVenusRequirements = game.getVenusScaleLevel() >= 12 - (2 * player.getRequirementsBonus(game, true));
+      const meetsVenusRequirements = game.checkMinRequirements(player, GlobalParameter.VENUS, 12);
 
       if (cardsWithFloater.length > 1) {
         return meetsVenusRequirements;
@@ -37,7 +37,7 @@ export class StratosphericBirds implements IActionCard, IProjectCard, IResourceC
       }
     }
     public play(player: Player, game: Game) {
-      game.defer(new RemoveResourcesFromCard(player, game, ResourceType.FLOATER, 1, true));
+      game.defer(new RemoveResourcesFromCard(player, ResourceType.FLOATER, 1, true));
       return undefined;
     }
     public canAct(): boolean {
@@ -54,12 +54,11 @@ export class StratosphericBirds implements IActionCard, IProjectCard, IResourceC
       cardNumber: '249',
       requirements: CardRequirements.builder((b) => b.venus(12)),
       renderData: CardRenderer.builder((b) => {
-        b.effectBox((eb) => {
+        b.action('Add 1 animal to this card.', (eb) => {
           eb.empty().startAction.animals(1);
-          eb.description('Action: Add 1 animal to this card.');
         }).br;
         b.minus().floaters(1).br;
-        b.text('1 VP for each Animal on this card.', CardRenderItemSize.TINY, true);
+        b.vpText('1 VP for each Animal on this card.');
       }),
       description: {
         text: 'Requires Venus 12% and that you spend 1 Floater from any card.',

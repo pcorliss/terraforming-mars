@@ -10,7 +10,7 @@ import {CardMetadata} from '../CardMetadata';
 import {CardRequirements} from '../CardRequirements';
 import {CardRenderer} from '../render/CardRenderer';
 import {CardRenderDynamicVictoryPoints} from '../render/CardRenderDynamicVictoryPoints';
-import {CardRenderItemSize} from '../render/CardRenderItemSize';
+import {GlobalParameter} from '../../GlobalParameter';
 
 export class VenusianAnimals implements IProjectCard, IResourceCard {
     public cost = 15;
@@ -20,7 +20,7 @@ export class VenusianAnimals implements IProjectCard, IResourceCard {
     public resourceType = ResourceType.ANIMAL;
     public resourceCount: number = 0;
     public canPlay(player: Player, game: Game): boolean {
-      return game.getVenusScaleLevel() >= 18 - (2 * player.getRequirementsBonus(game, true));
+      return game.checkMinRequirements(player, GlobalParameter.VENUS, 18);
     }
     public play() {
       return undefined;
@@ -35,11 +35,10 @@ export class VenusianAnimals implements IProjectCard, IResourceCard {
       cardNumber: '259',
       requirements: CardRequirements.builder((b) => b.venus(18)),
       renderData: CardRenderer.builder((b) => {
-        b.effectBox((eb)=> {
+        b.effect('When you play a Science tag, including this, add 1 Animal to this card.', (eb)=> {
           eb.science().played.startEffect.animals(1);
-          eb.description('Effect: when you play a Science tag, including this, add 1 Animal to this card.');
         }).br;
-        b.text('1 VP per Animal on this card.', CardRenderItemSize.TINY, true);
+        b.vpText('1 VP per Animal on this card.');
       }),
       description: 'Requires Venus 18%',
       victoryPoints: CardRenderDynamicVictoryPoints.animals(1, 1),

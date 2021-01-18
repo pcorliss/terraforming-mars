@@ -14,14 +14,13 @@ export class TradingColony implements IProjectCard {
     public tags = [Tags.SPACE];
     public name = CardName.TRADING_COLONY;
     public cardType = CardType.ACTIVE;
-    public hasRequirements = false;
 
     public canPlay(player: Player, game: Game): boolean {
-      return player.canPlayColonyPlacementCard(game);
+      return player.hasAvailableColonyTileToBuildOn(game);
     }
 
     public play(player: Player, game: Game) {
-      game.defer(new BuildColony(player, game, false, 'Select colony for Trading Colony'));
+      game.defer(new BuildColony(player, false, 'Select colony for Trading Colony'));
       player.colonyTradeOffset++;
       return undefined;
     }
@@ -32,9 +31,8 @@ export class TradingColony implements IProjectCard {
     public metadata: CardMetadata = {
       cardNumber: 'C47',
       renderData: CardRenderer.builder((b) => {
-        b.effectBox((eb) => {
+        b.effect('When you trade, you may first increase that Colony Tile track 1 step.', (eb) => {
           eb.trade().startEffect.text('+1', CardRenderItemSize.LARGE);
-          eb.description('Effect: When you trade, you may first increase that Colony Tile track 1 step.');
         }).br;
         b.colonies(1);
       }),

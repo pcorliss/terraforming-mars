@@ -16,7 +16,7 @@ describe('Splice', function() {
     card = new Splice();
     player = TestPlayers.BLUE.newPlayer();
     player2 = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, player2], player);
+    game = Game.newInstance('foobar', [player, player2], player);
   });
 
   it('Should play', function() {
@@ -43,7 +43,7 @@ describe('Splice', function() {
     const card2 = new PharmacyUnion();
     const play = card.play();
     player.corporationCard = card;
-    const play2 = card2.play(player, game);
+    const play2 = card2.play(player);
     player2.corporationCard = card2;
     expect(play).is.undefined;
     expect(play2).is.undefined;

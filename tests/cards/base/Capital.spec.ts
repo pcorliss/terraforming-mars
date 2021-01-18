@@ -7,7 +7,7 @@ import {TileType} from '../../../src/TileType';
 import {SelectSpace} from '../../../src/inputs/SelectSpace';
 import {Resources} from '../../../src/Resources';
 import {maxOutOceans, TestPlayers} from '../../TestingUtils';
-import {Board} from '../../../src/Board';
+import {Board} from '../../../src/boards/Board';
 
 describe('Capital', function() {
   let card : Capital; let player : Player; let game : Game;
@@ -16,7 +16,7 @@ describe('Capital', function() {
     card = new Capital();
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player);
   });
 
   it('Can\'t play without energy production', function() {
@@ -69,6 +69,6 @@ describe('Capital', function() {
     // check VP
     const greenerySpace = game.board.getAdjacentSpaces(space).find((space) => space.spaceType === SpaceType.LAND);
     game.addGreenery(player, greenerySpace!.id);
-    expect(player.getVictoryPoints(game).city).to.eq(1); // 1 VP for Capital city
+    expect(player.getVictoryPoints().city).to.eq(1); // 1 VP for Capital city
   });
 });

@@ -3,9 +3,8 @@ import {CardName} from './CardName';
 import {Color} from './Color';
 import {SerializedCard} from './SerializedCard';
 import {VictoryPointsBreakdown} from './VictoryPointsBreakdown';
-import {CorporationCard} from './cards/corporation/CorporationCard';
+import {SerializedTimer} from './SerializedTimer';
 
-// TODO(kberg): remove reference to CorporationCard by 2021-01-15
 export interface SerializedPlayer {
     actionsTakenThisRound: number;
     actionsThisGeneration: Array<CardName>;
@@ -29,6 +28,7 @@ export interface SerializedPlayer {
     fleetSize: number;
     handicap: number;
     hasIncreasedTerraformRatingThisGeneration: boolean;
+    hasTurmoilScienceTagBonus: boolean;
     heat: number;
     heatProduction: number;
     id: string;
@@ -38,12 +38,12 @@ export interface SerializedPlayer {
     name: string;
     needsToDraft: boolean | undefined;
     oceanBonus: number;
-    pickedCorporationCard: CardName | CorporationCard | undefined;
+    pickedCorporationCard: CardName | undefined;
     plantProduction: number;
     plants: number;
     plantsNeededForGreenery: number;
     playedCards: Array<SerializedCard>;
-    powerPlantCost: number;
+    politicalAgendasActionUsedCount: number;
     preludeCardsInHand: Array<CardName>;
     removedFromPlayCards: Array<CardName>;
     removingPlayers: Array<PlayerId>;
@@ -53,11 +53,12 @@ export interface SerializedPlayer {
     steelValue: number;
     terraformRating: number;
     terraformRatingAtGenerationStart: number;
+    timer: SerializedTimer;
     titanium: number;
     titaniumProduction: number;
     titaniumValue: number;
     tradesThisTurn: number;
+    turmoilPolicyActionUsed: boolean;
     usedUndo: boolean;
-    turmoilScientistsActionUsed: boolean;
     victoryPointsBreakdown: VictoryPointsBreakdown;
 }

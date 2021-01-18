@@ -9,12 +9,8 @@ describe('ExperimentalForest', function() {
   it('Should play', function() {
     const card = new ExperimentalForest();
     const player = TestPlayers.BLUE.newPlayer();
-    const game = new Game('foobar', [player], player);
+    const game = Game.newInstance('foobar', [player], player);
     card.play(player, game);
-    expect(game.deferredActions).has.lengthOf(2);
-
-    // Draw cards
-    game.deferredActions.runNext();
 
     // Select Greenery space
     const selectSpace = game.deferredActions.next()!.execute() as SelectSpace;

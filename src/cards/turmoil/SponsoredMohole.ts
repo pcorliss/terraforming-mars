@@ -13,7 +13,7 @@ import {CardRenderer} from '../render/CardRenderer';
 
 export class SponsoredMohole implements IProjectCard {
     public cost = 5;
-    public tags = [Tags.STEEL];
+    public tags = [Tags.BUILDING];
     public name = CardName.SPONSORED_MOHOLE;
     public cardType = CardType.AUTOMATED;
 
@@ -33,7 +33,7 @@ export class SponsoredMohole implements IProjectCard {
       cardNumber: 'T13',
       requirements: CardRequirements.builder((b) => b.party(PartyName.KELVINISTS)),
       renderData: CardRenderer.builder((b) => {
-        b.productionBox((pb) => pb.heat(2));
+        b.production((pb) => pb.heat(2));
       }),
       description: 'Requires that Kelvinists are ruling or that you have 2 delegates there. Increase your heat production 2 steps.',
     };

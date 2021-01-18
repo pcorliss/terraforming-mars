@@ -2,10 +2,16 @@ import {Player} from '../src/Player';
 import {Game, GameOptions} from '../src/Game';
 import * as constants from '../src/constants';
 import {SpaceType} from '../src/SpaceType';
-import {BoardName} from '../src/BoardName';
+import {BoardName} from '../src/boards/BoardName';
 import {RandomMAOptionType} from '../src/RandomMAOptionType';
-import {ISpace} from '../src/ISpace';
+import {ISpace} from '../src/boards/ISpace';
 import {Color} from '../src/Color';
+import {AgendaStyle} from '../src/turmoil/PoliticalAgendas';
+import {Phase} from '../src/Phase';
+import {IParty} from '../src/turmoil/parties/IParty';
+import {Turmoil} from '../src/turmoil/Turmoil';
+import {TurmoilPolicy} from '../src/turmoil/TurmoilPolicy';
+import {Units} from '../src/Units';
 
 // Returns the oceans created during this operation which may not reflect all oceans.
 export const maxOutOceans = function(player: Player, game: Game, toValue: number = 0): Array<ISpace> {
@@ -48,6 +54,7 @@ export const setCustomGameOptions = function(options: object = {}): GameOptions 
     promoCardsOption: false,
     communityCardsOption: false,
     undoOption: false,
+    showTimers: false,
     startingCorporations: 2,
     includeVenusMA: true,
     soloTR: false,
@@ -59,10 +66,39 @@ export const setCustomGameOptions = function(options: object = {}): GameOptions 
     removeNegativeGlobalEventsOption: false,
     customColoniesList: [],
     requiresVenusTrackCompletion: false,
+    politicalAgendasExtension: AgendaStyle.STANDARD,
+    moonExpansion: false,
   };
 
   return Object.assign(defaultOptions, options);
 };
+
+export const setRulingPartyAndRulingPolicy = function(game: Game, turmoil: Turmoil, party: IParty, policyId: TurmoilPolicy) {
+  turmoil.rulingParty = party;
+  turmoil.politicalAgendasData.currentAgenda = {bonusId: party.bonuses[0].id, policyId: policyId};
+  game.phase = Phase.ACTION;
+};
+
+export function setPlayerProductionForTest(player: Player, units: Partial<Units>) {
+  if (units.megacredits !== undefined) {
+    (player as any).megaCreditProduction = units.megacredits;
+  }
+  if (units.steel !== undefined) {
+    (player as any).steelProduction = units.steel;
+  }
+  if (units.titanium !== undefined) {
+    (player as any).titaniumProduction = units.titanium;
+  }
+  if (units.plants !== undefined) {
+    (player as any).plantProduction = units.plants;
+  }
+  if (units.energy !== undefined) {
+    (player as any).energyProduction = units.energy;
+  }
+  if (units.heat !== undefined) {
+    (player as any).heatProduction = units.heat;
+  }
+}
 
 class TestPlayerFactory {
   constructor(private color: Color) {}

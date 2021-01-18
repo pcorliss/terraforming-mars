@@ -1,4 +1,8 @@
 require('dotenv').config();
+require('console-stamp')(
+  console,
+  {format: ':date(yyyy-mm-dd HH:MM:ss Z)'},
+);
 
 import * as https from 'https';
 import * as http from 'http';
@@ -7,8 +11,7 @@ import * as path from 'path';
 import * as querystring from 'querystring';
 import * as zlib from 'zlib';
 
-import {BoardName} from './src/BoardName';
-import {Color} from './src/Color';
+import {BoardName} from './src/boards/BoardName';
 import {Game, GameId} from './src/Game';
 import {GameLoader} from './src/database/GameLoader';
 import {GameLogs} from './src/routes/GameLogs';
@@ -17,13 +20,13 @@ import {Phase} from './src/Phase';
 import {Player} from './src/Player';
 import {Database} from './src/database/Database';
 import {Server} from './src/server/ServerModel';
+import {Cloner} from './src/database/Cloner';
 
-const serverId = process.env.SERVER_ID || generateRandomServerId();
+const serverId = process.env.SERVER_ID || generateRandomId();
 const styles = fs.readFileSync('styles.css');
 let compressedStyles: undefined | Buffer = undefined;
-const gameLoader = new GameLoader();
 const route = new Route();
-const gameLogs = new GameLogs(gameLoader);
+const gameLogs = new GameLogs();
 const assetCacheMaxAge = process.env.ASSET_CACHE_MAX_AGE || 0;
 const fileCache = new Map<string, Buffer>();
 const isProduction = process.env.NODE_ENV === 'production';
@@ -118,7 +121,7 @@ function processRequest(req: http.IncomingMessage, res: http.ServerResponse): vo
       const playerId: string = req.url.substring(
         '/player/input?id='.length,
       );
-      gameLoader.getGameByPlayerId(playerId, (game) => {
+      GameLoader.getInstance().getByPlayerId(playerId, (game) => {
         if (game === undefined) {
           route.notFound(req, res);
           return;
@@ -180,12 +183,9 @@ if (process.env.KEY_PATH && process.env.CERT_PATH) {
   server = http.createServer(requestHandler);
 }
 
-function generateRandomGameId(): GameId {
+function generateRandomId(): GameId {
+  // 281474976710656 possible values.
   return Math.floor(Math.random() * Math.pow(16, 12)).toString(16);
-}
-
-function generateRandomServerId(): string {
-  return generateRandomGameId();
 }
 
 function processInput(
@@ -201,7 +201,7 @@ function processInput(
   req.once('end', function() {
     try {
       const entity = JSON.parse(body);
-      player.process(game, entity);
+      player.process(entity);
       res.setHeader('Content-Type', 'application/json');
       res.write(getPlayerModelJSON(player, game));
       res.end();
@@ -240,7 +240,7 @@ function apiGetGames(
     return;
   }
   res.setHeader('Content-Type', 'application/json');
-  res.write(JSON.stringify(gameLoader.getLoadedGameIds()));
+  res.write(JSON.stringify(GameLoader.getInstance().getLoadedGameIds()));
   res.end();
 }
 
@@ -258,23 +258,16 @@ function loadGame(req: http.IncomingMessage, res: http.ServerResponse): void {
       if (rollbackCount > 0) {
         Database.getInstance().deleteGameNbrSaves(game_id, rollbackCount);
       }
-
-      const player = new Player('test', Color.BLUE, false, 0);
-      const player2 = new Player('test2', Color.RED, false, 0);
-      const gameToRebuild = new Game(game_id, [player, player2], player);
-      Database.getInstance().restoreGameLastSave(
-        game_id,
-        gameToRebuild,
-        function(err) {
-          if (err) {
-            return;
-          }
-          gameLoader.addGame(gameToRebuild);
-        },
-      );
-      res.setHeader('Content-Type', 'application/json');
-      res.write(getGameModelJSON(gameToRebuild));
-      res.end();
+      GameLoader.getInstance().getByGameId(game_id, true, (game) => {
+        if (game === undefined) {
+          console.warn(`unable to find ${game_id} in database`);
+          route.notFound(req, res);
+          return;
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.write(getGameModelJSON(game));
+        res.end();
+      });
     } catch (error) {
       route.internalServerError(req, res, error);
     }
@@ -306,7 +299,7 @@ function apiGetGame(req: http.IncomingMessage, res: http.ServerResponse): void {
 
   const gameId: GameId = matches[1];
 
-  gameLoader.getGameByGameId(gameId, (game: Game | undefined) => {
+  GameLoader.getInstance().getByGameId(gameId, false, (game: Game | undefined) => {
     if (game === undefined) {
       console.warn('game is undefined');
       route.notFound(req, res);
@@ -327,7 +320,7 @@ function apiGetWaitingFor(
   const queryParams = querystring.parse(qs);
   const playerId = (queryParams as any)['id'];
   const prevGameAge = parseInt((queryParams as any)['prev-game-age']);
-  gameLoader.getGameByPlayerId(playerId, (game) => {
+  GameLoader.getInstance().getByPlayerId(playerId, (game) => {
     if (game === undefined) {
       route.notFound(req, res);
       return;
@@ -371,7 +364,7 @@ function apiGetPlayer(
   if (playerId === undefined) {
     playerId = '';
   }
-  gameLoader.getGameByPlayerId(playerId as string, (game) => {
+  GameLoader.getInstance().getByPlayerId(playerId as string, (game) => {
     if (game === undefined) {
       route.notFound(req, res);
       return;
@@ -400,19 +393,20 @@ function createGame(req: http.IncomingMessage, res: http.ServerResponse): void {
   req.once('end', function() {
     try {
       const gameReq = JSON.parse(body);
-      const gameId = generateRandomGameId();
+      const gameId = generateRandomId();
       const players = gameReq.players.map((obj: any) => {
         return new Player(
           obj.name,
           obj.color,
           obj.beginner,
-          obj.handicap,
+          Number(obj.handicap), // For some reason handicap is coming up a string.
+          generateRandomId(),
         );
       });
-      let firstPlayer = players[0];
+      let firstPlayerIdx: number = 0;
       for (let i = 0; i < gameReq.players.length; i++) {
         if (gameReq.players[i].first === true) {
-          firstPlayer = players[i];
+          firstPlayerIdx = i;
           break;
         }
       }
@@ -427,6 +421,7 @@ function createGame(req: http.IncomingMessage, res: http.ServerResponse): void {
         clonedGamedId: gameReq.clonedGamedId,
 
         undoOption: gameReq.undoOption,
+        showTimers: gameReq.showTimers,
         fastModeOption: gameReq.fastModeOption,
         showOtherPlayersVP: gameReq.showOtherPlayersVP,
 
@@ -437,6 +432,8 @@ function createGame(req: http.IncomingMessage, res: http.ServerResponse): void {
         turmoilExtension: gameReq.turmoil,
         aresExtension: gameReq.aresExtension,
         aresHazards: true, // Not a runtime option.
+        politicalAgendasExtension: gameReq.politicalAgendasExtension,
+        moonExpansion: gameReq.moonExpansion,
         promoCardsOption: gameReq.promoCardsOption,
         communityCardsOption: gameReq.communityCardsOption,
         solarPhaseOption: gameReq.solarPhaseOption,
@@ -456,11 +453,29 @@ function createGame(req: http.IncomingMessage, res: http.ServerResponse): void {
         requiresVenusTrackCompletion: gameReq.requiresVenusTrackCompletion,
       };
 
-      const game = new Game(gameId, players, firstPlayer, gameOptions);
-      gameLoader.addGame(game);
-      res.setHeader('Content-Type', 'application/json');
-      res.write(getGameModelJSON(game));
-      res.end();
+      if (gameOptions.clonedGamedId !== undefined && !gameOptions.clonedGamedId.startsWith('#')) {
+        Database.getInstance().loadCloneableGame(gameOptions.clonedGamedId, (err, serialized) => {
+          Cloner.clone(gameId, players, firstPlayerIdx, err, serialized, (err, game) => {
+            if (err) {
+              throw err;
+            }
+            if (game === undefined) {
+              throw new Error(`game ${gameOptions.clonedGamedId} not cloned`); // how to nest errs in the way Java nests exceptions?
+            }
+            GameLoader.getInstance().add(game);
+            res.setHeader('Content-Type', 'application/json');
+            res.write(getGameModelJSON(game));
+            res.end();
+          });
+        });
+      } else {
+        const seed = Math.random();
+        const game = Game.newInstance(gameId, players, players[firstPlayerIdx], gameOptions, seed);
+        GameLoader.getInstance().add(game);
+        res.setHeader('Content-Type', 'application/json');
+        res.write(getGameModelJSON(game));
+        res.end();
+      }
     } catch (error) {
       route.internalServerError(req, res, error);
     }
@@ -573,19 +588,28 @@ function serveStyles(req: http.IncomingMessage, res: http.ServerResponse): void 
   res.end(buffer);
 }
 
-gameLoader.start(() => {
-  console.log('Starting server on port ' + (process.env.PORT || 8080));
-  console.log('version 0.X');
+console.log('Starting server on port ' + (process.env.PORT || 8080));
 
-  server.listen(process.env.PORT || 8080);
+try {
+  // The first call to Database.getInstance also intiailizes a connection to the database. Better to
+  // fail here than after the server opens to process requests.
+  Database.getInstance();
+} catch (err) {
+  console.error('Cannot connect to database:', err);
+  throw err;
+}
 
-  console.log(
-    '\nThe secret serverId for this server is \x1b[1m' +
-    serverId +
-    '\x1b[0m. Use it to access the following administrative routes:\n',
-  );
-  console.log(
-    '* Overview of existing games: /games-overview?serverId=' + serverId,
-  );
-  console.log('* API for game IDs: /api/games?serverId=' + serverId + '\n');
-});
+console.log('version 0.X');
+
+server.listen(process.env.PORT || 8080);
+
+console.log(
+  '\nThe secret serverId for this server is \x1b[1m' +
+  serverId +
+  '\x1b[0m. Use it to access the following administrative routes:\n',
+);
+console.log(
+  '* Overview of existing games: /games-overview?serverId=' + serverId,
+);
+console.log('* API for game IDs: /api/games?serverId=' + serverId + '\n');
+

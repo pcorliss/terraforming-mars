@@ -1,10 +1,11 @@
-
 import {CorporationCard} from '../corporation/CorporationCard';
 import {Player} from '../../Player';
 import {Tags} from '../Tags';
 import {Game} from '../../Game';
 import {CardName} from '../../CardName';
 import {CardType} from '../CardType';
+import {CardMetadata} from '../CardMetadata';
+import {CardRenderer} from '../render/CardRenderer';
 
 export class MorningStarInc implements CorporationCard {
     public name = CardName.MORNING_STAR_INC;
@@ -13,18 +14,8 @@ export class MorningStarInc implements CorporationCard {
     public cardType = CardType.CORPORATION;
 
     public initialActionText: string = 'Draw 3 Venus-tag cards';
-    public initialAction(player: Player, game: Game) {
-      if (game.hasCardsWithTag(Tags.VENUS, 3)) {
-        for (const foundCard of game.drawCardsByTag(Tags.VENUS, 3)) {
-          player.cardsInHand.push(foundCard);
-        }
-
-        const drawnCards = game.getCardsInHandByTag(player, Tags.VENUS).slice(-3);
-
-        game.log('${0} drew ${1}, ${2} and ${3}', (b) =>
-          b.player(player).card(drawnCards[0]).card(drawnCards[1]).card(drawnCards[2]));
-      }
-
+    public initialAction(player: Player) {
+      player.drawCard(3, {tag: Tags.VENUS});
       return undefined;
     }
 
@@ -35,5 +26,18 @@ export class MorningStarInc implements CorporationCard {
 
     public play() {
       return undefined;
+    }
+
+    public metadata: CardMetadata = {
+      cardNumber: 'R06',
+      description: 'You start with 50 MC. As your first action, reveal cards from the deck until you have revealed 3 Venus-tag cards. Take those into hand and discard the rest.',
+      renderData: CardRenderer.builder((b) => {
+        b.megacredits(50).nbsp.cards(3).secondaryTag(Tags.VENUS);
+        b.corpBox('effect', (ce) => {
+          ce.effect('Your Venus requirements are +/- 2 steps, your choice in each case.', (eb) => {
+            eb.plate('Venus requirements').startEffect.text('+/- 2');
+          });
+        });
+      }),
     }
 }

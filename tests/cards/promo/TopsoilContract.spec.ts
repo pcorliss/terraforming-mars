@@ -14,7 +14,7 @@ describe('TopsoilContract', function() {
     card = new TopsoilContract();
     player = TestPlayers.BLUE.newPlayer();
     player2 = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, player2], player);
+    game = Game.newInstance('foobar', [player, player2], player);
   });
 
   it('Can play', function() {
@@ -32,7 +32,7 @@ describe('TopsoilContract', function() {
     expect(player.megaCredits).to.eq(1);
 
     const aerobrakedAmmoniaAsteroid = new AerobrakedAmmoniaAsteroid();
-    aerobrakedAmmoniaAsteroid.play(player, game);
+    aerobrakedAmmoniaAsteroid.play(player);
     expect(tardigrades.resourceCount).to.eq(3);
     expect(player.megaCredits).to.eq(3);
 

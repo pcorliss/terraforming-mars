@@ -11,7 +11,7 @@ describe('PowerInfrastructure', function() {
     card = new PowerInfrastructure();
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player);
   });
 
   it('Can\'t act', function() {
@@ -22,7 +22,7 @@ describe('PowerInfrastructure', function() {
   it('Should act', function() {
     player.energy = 1;
     expect(card.canAct(player)).is.true;
-    const action = card.action(player, game);
+    const action = card.action(player);
     action.cb(1);
 
     expect(player.energy).to.eq(0);

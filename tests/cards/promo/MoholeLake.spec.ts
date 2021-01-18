@@ -16,7 +16,7 @@ describe('MoholeLake', function() {
     card = new MoholeLake();
     player = TestPlayers.BLUE.newPlayer();
     const redPlayer = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, redPlayer], player);
+    game = Game.newInstance('foobar', [player, redPlayer], player);
   });
 
   it('Can play', function() {
@@ -32,9 +32,9 @@ describe('MoholeLake', function() {
     expect(player.plants).to.eq(3);
   });
 
-  it('Can\'t act', function() {
-    card.play(player, game);
-    expect(card.canAct(player)).is.not.true;
+  it('Can act - no target', function() {
+    expect(card.canAct()).is.true;
+    expect(card.action(player)).is.undefined;
   });
 
   it('Can act - single target', function() {
@@ -42,8 +42,8 @@ describe('MoholeLake', function() {
     player.playedCards.push(fish);
 
     card.play(player, game);
-    expect(card.canAct(player)).is.true;
-    card.action(player, game);
+    expect(card.canAct()).is.true;
+    card.action(player);
     expect(fish.resourceCount).to.eq(1);
   });
 
@@ -53,8 +53,8 @@ describe('MoholeLake', function() {
     player.playedCards.push(fish, ants);
 
     card.play(player, game);
-    expect(card.canAct(player)).is.true;
-    const action = card.action(player, game) as SelectCard<ICard>;
+    expect(card.canAct()).is.true;
+    const action = card.action(player) as SelectCard<ICard>;
 
     action.cb([ants]);
     expect(ants.resourceCount).to.eq(1);

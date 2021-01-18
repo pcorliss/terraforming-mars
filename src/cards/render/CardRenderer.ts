@@ -1,4 +1,4 @@
-import {CardRenderItem} from './CardRenderItem';
+import {AltSecondaryTag, CardRenderItem} from './CardRenderItem';
 import {CardRenderSymbol} from './CardRenderSymbol';
 import {CardRenderItemSize} from './CardRenderItemSize';
 import {CardRenderItemType} from './CardRenderItemType';
@@ -83,10 +83,38 @@ export class CardRenderEffect extends CardRenderer {
 
   public get description(): ItemType {
     this._validate();
-    // TODO (chosta): validate builder method to make sure it's the last element
     return this.rows[2].slice(-1)[0];
   }
+
+  public set description(content: ItemType) {
+    this.rows[2].push(content);
+  }
 }
+
+export class CardRenderCorpBoxEffect extends CardRenderer {
+  constructor(rows: Array<Array<CardRenderEffect | CardRenderItem | string>>) {
+    super(rows);
+  }
+
+  public static builder(f: (builder: CorpEffectBuilderEffect) => void): CardRenderCorpBoxEffect {
+    const builder = new CorpEffectBuilderEffect();
+    f(builder);
+    return builder.build();
+  }
+}
+
+export class CardRenderCorpBoxAction extends CardRenderer {
+  constructor(rows: Array<Array<CardRenderEffect | CardRenderItem | string>>) {
+    super(rows);
+  }
+
+  public static builder(f: (builder: CorpEffectBuilderAction) => void): CardRenderCorpBoxAction {
+    const builder = new CorpEffectBuilderAction();
+    f(builder);
+    return builder.build();
+  }
+}
+
 
 class Builder {
   protected _data: Array<Array<ItemType>> = [[]];
@@ -129,14 +157,15 @@ class Builder {
     }
   }
 
-
   public temperature(amount: number): Builder {
     this._addRowItem(new CardRenderItem(CardRenderItemType.TEMPERATURE, amount));
     return this;
   }
 
-  public oceans(amount: number): Builder {
-    this._addRowItem(new CardRenderItem(CardRenderItemType.OCEANS, amount));
+  public oceans(amount: number, size: CardRenderItemSize = CardRenderItemSize.MEDIUM): Builder {
+    const item = new CardRenderItem(CardRenderItemType.OCEANS, amount);
+    item.size = size;
+    this._addRowItem(item);
     return this;
   }
 
@@ -191,15 +220,19 @@ class Builder {
     return this;
   }
 
-  public tr(amount: number): Builder {
-    this._addRowItem(new CardRenderItem(CardRenderItemType.TR, amount));
+  public tr(amount: number, size: CardRenderItemSize = CardRenderItemSize.MEDIUM, cancelled: boolean = false): Builder {
+    const item = new CardRenderItem(CardRenderItemType.TR, amount);
+    item.size = size;
+    item.cancelled = cancelled;
+    this._addRowItem(item);
     return this;
   }
 
-  public megacredits(amount: number): Builder {
+  public megacredits(amount: number, size: CardRenderItemSize = CardRenderItemSize.MEDIUM): Builder {
     const item = new CardRenderItem(CardRenderItemType.MEGACREDITS, amount);
     item.amountInside = true;
     item.showDigit = false;
+    item.size = size;
     this._addRowItem(item);
     return this;
   }
@@ -272,6 +305,11 @@ class Builder {
     return this;
   }
 
+  public placeColony(): Builder {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.PLACE_COLONY));
+    return this;
+  }
+
   public influence(amount: number): Builder {
     this._addRowItem(new CardRenderItem(CardRenderItemType.INFLUENCE, amount));
     return this;
@@ -288,7 +326,7 @@ class Builder {
     const item = new CardRenderItem(CardRenderItemType.GREENERY);
     item.size = size;
     if (withO2) {
-      item.secondaryTag = 'oxygen';
+      item.secondaryTag = AltSecondaryTag.OXYGEN;
     }
     this._addRowItem(item);
     return this;
@@ -319,6 +357,11 @@ class Builder {
     return this;
   }
 
+  public preservation(amount: number) {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.PRESERVATION, amount));
+    return this;
+  }
+
   public diverseTag(amount: number = 1) {
     const item = new CardRenderItem(CardRenderItemType.DIVERSE_TAG, amount);
     item.isPlayed = true;
@@ -331,8 +374,38 @@ class Builder {
     return this;
   }
 
+  public camps(amount: number = 1) {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.CAMPS, amount));
+    return this;
+  }
+
   public selfReplicatingRobots() {
     this._addRowItem(new CardRenderItem(CardRenderItemType.SELF_REPLICATING));
+    return this;
+  }
+
+  public prelude() {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.PRELUDE));
+    return this;
+  }
+
+  public award() {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.AWARD));
+    return this;
+  }
+
+  public vpIcon() {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.VP));
+    return this;
+  }
+
+  public community() {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.COMMUNITY));
+    return this;
+  }
+
+  public disease() {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.DISEASE));
     return this;
   }
 
@@ -347,22 +420,92 @@ class Builder {
     return this;
   }
 
-  public emptyTile(type: 'normal' | 'golden' = 'normal') {
+  public moon(): Builder {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.MOON));
+    return this;
+  }
+
+  public resourceCube(amount = 1): Builder {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.RESOURCE_CUBE, amount));
+    return this;
+  }
+
+  public moonColony(): Builder {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.MOON_COLONY));
+    return this;
+  }
+
+  public moonColonyRate(amount: number = 1): Builder {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.MOON_COLONY_RATE, amount));
+    return this;
+  }
+
+  public moonRoad(): Builder {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.MOON_ROAD));
+    return this;
+  }
+
+  public moonLogisticsRate(amount: number = 1): Builder {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.MOON_LOGISTICS_RATE, amount));
+    return this;
+  }
+
+  public moonMine(): Builder {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.MOON_MINE));
+    return this;
+  }
+
+  public moonMineRate(amount: number = 1): Builder {
+    this._addRowItem(new CardRenderItem(CardRenderItemType.MOON_MINE_RATE, amount));
+    return this;
+  }
+
+  public emptyTile(type: 'normal' | 'golden' = 'normal', size: CardRenderItemSize = CardRenderItemSize.MEDIUM) {
     if (type === 'normal') {
-      this._addRowItem(new CardRenderItem(CardRenderItemType.EMPTY_TILE, -1));
+      const normal = new CardRenderItem(CardRenderItemType.EMPTY_TILE, -1);
+      normal.size = size;
+      this._addRowItem(normal);
     } else if (type === 'golden') {
-      this._addRowItem(new CardRenderItem(CardRenderItemType.EMPTY_TILE_GOLDEN, -1));
+      const golden = new CardRenderItem(CardRenderItemType.EMPTY_TILE_GOLDEN, -1);
+      golden.size = size;
+      this._addRowItem(golden);
     }
     return this;
   }
 
-  public productionBox(pb: (builder: ProductionBoxBuilder) => void): Builder {
+  public production(pb: (builder: ProductionBoxBuilder) => void): Builder {
     this._addRowItem(CardRenderProductionBox.builder(pb));
     return this;
   }
 
-  public effectBox(eb: (builder: EffectBuilder) => void): Builder {
-    this._addRowItem(CardRenderEffect.builder(eb));
+  public standardProject(description: string, eb: (builder: EffectBuilder) => void): Builder {
+    const builder = CardRenderEffect.builder(eb);
+    builder.description = description;
+    this._addRowItem(builder);
+    return this;
+  }
+
+  public action(description: string | undefined, eb: (builder: EffectBuilder) => void): Builder {
+    const builder = CardRenderEffect.builder(eb);
+    builder.description = description !== undefined ? 'Action: ' + description : undefined;
+    this._addRowItem(builder);
+    return this;
+  }
+
+  public effect(description: string | undefined, eb: (builder: EffectBuilder) => void): Builder {
+    const builder = CardRenderEffect.builder(eb);
+    builder.description = description !== undefined ? 'Effect: ' + description : undefined;
+    this._addRowItem(builder);
+    return this;
+  }
+
+  public corpBox(type: 'action' | 'effect', eb: (builder: CorpEffectBuilderEffect | CorpEffectBuilderAction) => void): Builder {
+    this.br;
+    if (type === 'action') {
+      this._addRowItem(CardRenderCorpBoxAction.builder(eb));
+    } else {
+      this._addRowItem(CardRenderCorpBoxEffect.builder(eb));
+    }
     return this;
   }
 
@@ -424,17 +567,23 @@ class Builder {
     const item = new CardRenderItem(CardRenderItemType.PLATE);
     item.text = text;
     item.isPlate = true;
+    item.isBold = true;
     this._addRowItem(item);
     return this;
   }
 
-  public text(text: string, size: CardRenderItemSize = CardRenderItemSize.MEDIUM, uppercase: boolean = false): Builder {
+  public text(text: string, size: CardRenderItemSize = CardRenderItemSize.MEDIUM, uppercase: boolean = false, isBold: boolean = true): Builder {
     const item = new CardRenderItem(CardRenderItemType.TEXT);
     item.text = text;
     item.size = size;
     item.isUppercase = uppercase;
+    item.isBold = isBold;
     this._addRowItem(item);
     return this;
+  }
+
+  public vpText(text: string): Builder {
+    return this.text(text, CardRenderItemSize.TINY, true);
   }
 
   public get br(): Builder {
@@ -462,6 +611,14 @@ class Builder {
   public get nbsp(): Builder {
     this._checkExistingItem();
     this._addSymbol(CardRenderSymbol.nbsp());
+    return this;
+  }
+
+  /*
+   * add non breakable vertical space (a div with different pixels height)
+   */
+  public vSpace(size: CardRenderItemSize = CardRenderItemSize.MEDIUM): Builder {
+    this._addSymbol(CardRenderSymbol.vSpace(size));
     return this;
   }
 
@@ -559,7 +716,7 @@ class Builder {
     return this;
   }
 
-  public secondaryTag(tag: Tags | 'req' | 'oxygen' | 'turmoil'): Builder {
+  public secondaryTag(tag: Tags | AltSecondaryTag): Builder {
     this._checkExistingItem();
     const row = this._getCurrentRow();
     if (row !== undefined) {
@@ -603,7 +760,7 @@ class Builder {
   }
 
   /**
-   * Used to start the effect for effectBox and actionBox, also adds a delimiter symbol
+   * Used to start the effect for action(), effect() and standardProject(), also adds a delimiter symbol
    */
   public get startEffect(): Builder {
     this.br;
@@ -633,5 +790,21 @@ class EffectBuilder extends Builder {
 
   public build(): CardRenderEffect {
     return new CardRenderEffect(this._data);
+  }
+}
+
+class CorpEffectBuilderEffect extends Builder {
+  protected _data: Array<Array<CardRenderEffect | CardRenderItem>> = [[]];
+
+  public build(): CardRenderCorpBoxAction {
+    return new CardRenderCorpBoxEffect(this._data);
+  }
+}
+
+class CorpEffectBuilderAction extends Builder {
+  protected _data: Array<Array<CardRenderEffect | CardRenderItem>> = [[]];
+
+  public build(): CardRenderCorpBoxEffect {
+    return new CardRenderCorpBoxAction(this._data);
   }
 }

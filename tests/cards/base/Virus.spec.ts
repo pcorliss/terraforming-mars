@@ -14,7 +14,7 @@ describe('Virus', function() {
     card = new Virus();
     player = TestPlayers.BLUE.newPlayer();
     player2 = TestPlayers.RED.newPlayer();
-    game = new Game('foobar', [player, player2], player);
+    game = Game.newInstance('foobar', [player, player2], player);
   });
 
   it('Should play', function() {
@@ -41,7 +41,10 @@ describe('Virus', function() {
     expect(player.plants).to.eq(5);
   });
 
-  it('Should play', function() {
-    expect(card.canPlay()).is.true;
+  it('Works in solo mode', function() {
+    game = Game.newInstance('foobar', [player], player);
+    expect(card.canPlay(player)).is.true;
+    expect(card.play(player, game)).is.undefined;
+    expect(game.someoneHasRemovedOtherPlayersPlants).is.true;
   });
 });

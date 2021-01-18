@@ -12,7 +12,6 @@ export class OrbitalCleanup implements IProjectCard {
     public cost = 14;
     public tags = [Tags.EARTH, Tags.SPACE];
     public cardType = CardType.ACTIVE;
-    public hasRequirements = false;
     public canPlay(player: Player): boolean {
       return player.getProduction(Resources.MEGACREDITS) >= -3;
     }
@@ -38,11 +37,10 @@ export class OrbitalCleanup implements IProjectCard {
     public metadata: CardMetadata = {
       cardNumber: 'X08',
       renderData: CardRenderer.builder((b) => {
-        b.effectBox((eb) => {
+        b.action('Gain 1 MC per Science tag you have.', (eb) => {
           eb.empty().startAction.megacredits(1).slash().science().played;
-          eb.description('Action: Gain 1 MC per Science tag you have.');
         }).br;
-        b.productionBox((pb) => {
+        b.production((pb) => {
           pb.megacredits(-2);
         });
       }),
